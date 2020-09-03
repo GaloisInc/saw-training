@@ -24,15 +24,17 @@ Examples:
 
 Start with swap in C. Use this to illustrate the ideas of correctness by comparing to ``xor_swap``, which seems far less obviously OK.
 
-Write a spec in C, like::
+.. literalinclude:: examples/swap/swap.c
+  :language: C
+  :start-after: // BEGIN SWAP
+  :end-before: // END SWAP
 
-    bool swap_ok (int a, int b){
-      int *x, *y;
-      *x = a;
-      *y = b;
-      swap(x, y);
-      return *x == b && *y == a;
-    }
+Write a spec in C, like:
+
+.. literalinclude:: examples/swap/swap.c
+  :language: C
+  :start-after: // BEGIN SWAP_SPEC
+  :end-before: // END SWAP_SPEC
 
 How can we use this to construct evidence that ``swap`` is ok?
 
@@ -42,14 +44,46 @@ Make a few kinds of broken swap:
 3. Dereference a null pointer if one number is the other left-shifted by 5 places
 (these are clearly easy to spot here, but similar issues can be difficult to find in larger, more complex code)
 
+.. literalinclude:: examples/swap/swap.c
+  :language: C
+  :start-after: // BEGIN SWAP_BROKEN1
+  :end-before: // END SWAP_BROKEN1
+
+.. literalinclude:: examples/swap/swap.c
+  :language: C
+  :start-after: // BEGIN SWAP_BROKEN2
+  :end-before: // END SWAP_BROKEN2
+
+.. literalinclude:: examples/swap/swap.c
+  :language: C
+  :start-after: // BEGIN SWAP_BROKEN3
+  :end-before: // END SWAP_BROKEN3
+
+
 Choose some test values
 
+.. literalinclude:: examples/swap/swap.c
+  :language: C
+  :start-after: // BEGIN SWAP_CHOSEN_VALUE_TEST
+  :end-before: // END SWAP_CHOSEN_VALUE_TEST
+
+
 Randomly choose some values
+
+.. literalinclude:: examples/swap/swap.c
+  :language: C
+  :start-after: // BEGIN SWAP_RANDOM_VALUE_TEST
+  :end-before: // END SWAP_RANDOM_VALUE_TEST
+
 
 Exhaustively check values - figure out how long it takes, and point out the folly
 
 Introduce SAW, and the idea of verification, which gives a "for all values" guarantee without actually exploring the whole search space. Discuss symbolic execution, and show (some representation of) the term that SAW creates for swap. Try these with the broken swaps, and interpret the error messages.
 
+.. literalinclude:: examples/swap/Makefile
+  :language: C
+  :start-after: # Build commands for swap
+  :end-before: # End build commands for swap
 
 Another way to provide evidence is to compare a reference implementation that is clear and trusted to a clever implementation. Use similar techniques to compare xor_swap and swap.
 

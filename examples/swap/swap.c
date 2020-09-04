@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <time.h>
@@ -13,9 +14,9 @@ void swap(uint32_t *x, uint32_t *y) {
 // END SWAP
 
 // BEGIN SWAP_SPEC
-bool swap_spec(uint32_t a, uint32_t b) {
+bool swap_spec(void (*fun)(uint32_t *, uint32_t *), uint32_t a, uint32_t b) {
     uint32_t x = a, y = b;
-    swap(&x, &y);
+    (*fun)(&x, &y);
     return x == b && y == a;
 }
 // END SWAP_SPEC
@@ -49,18 +50,25 @@ void swap_broken3(uint32_t *x, uint32_t *y) {
 }
 // END SWAP_BROKEN3
 
+void test_swap_function(void (*fun)(uint32_t *, uint32_t *), char *descr, uint32_t x, uint32_t y) {
+    printf("[%s] Testing with %u and %u... ", descr, x, y);
+    if (swap_spec(fun, x, y)) {
+        printf("OK\n");
+    } else {
+        printf("FAILED\n");
+    }
+}
+
+void test_swap(char *descr, uint32_t x, uint32_t y) {
+    test_swap_function(&swap, descr, x, y);
+}
 
 // BEGIN SWAP_CHOSEN_VALUE_TEST
 void chosen_value_test(void (*fun)(uint32_t *, uint32_t *)) {
-    uint32_t x = 1, y = 2;
-    (*fun)(&x, &y);
-    assert(x == 2 && y == 1);
-
-    x = 2429;
-    y = 8563;
-    (*fun)(&x, &y);
-    assert(x == 8563 && y == 2429);
-
+    test_swap_function(fun, "Chosen", 1, 2);
+    test_swap_function(fun, "Chosen", 2429, 98423);
+    test_swap_function(fun, "Chosen", 8347853, 0);
+    test_swap_function(fun, "Chosen", 5, 5);
     // ...
 }
 // END SWAP_CHOSEN_VALUE_TEST
@@ -69,11 +77,21 @@ void chosen_value_test(void (*fun)(uint32_t *, uint32_t *)) {
 void random_value_test(void (*fun)(uint32_t *, uint32_t *)) {
     srand(time(NULL));
 
-    for (int i = 0; i < 1000; i ++) {
-        uint32_t x = rand(), y = rand();
-        uint32_t old_x = x, old_y = y;
-        (*fun)(&x, &y);
-        assert(x == old_y && y == old_x);
+    for (int i = 0; i < 100; i ++) {
+        test_swap_function(fun, "Random", rand(), rand());
     }
 }
 // END SWAP_RANDOM_VALUE_TEST
+
+int main() {
+    printf("Beginning chosen-value tests for swap\n");
+    chosen_value_test(&swap);
+    printf("\n");
+    printf("Ending chosen-value tests for swap\n");
+
+    printf("Beginning random tests for swap\n");
+    random_value_test(&swap);
+    printf("Ending random tests for swap\n");
+
+
+}

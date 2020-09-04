@@ -1,0 +1,18 @@
+directmod <- llvm_load_module "swap.bc";
+
+let swap_spec = do {
+    x <- crucible_fresh_var "x" (llvm_int 32);
+    y <- crucible_fresh_var "y" (llvm_int 32);
+    xp <- crucible_alloc (llvm_int 32);
+    yp <- crucible_alloc (llvm_int 32);
+    crucible_points_to xp (crucible_term x);
+    crucible_points_to yp (crucible_term y);
+    crucible_execute_func [xp, yp];
+    crucible_points_to xp (crucible_term y);
+    crucible_points_to yp (crucible_term x);
+};
+
+crucible_llvm_verify xormod "swap_xor" [] true swap_spec abc;
+crucible_llvm_verify directmod "swap_direct" [] true swap_spec abc;
+print "Failing to validate buggy version";
+crucible_llvm_verify xormod_bug "swap_xor" [] true swap_spec abc;

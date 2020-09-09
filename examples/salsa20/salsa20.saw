@@ -1,4 +1,4 @@
-import "Salsa20.cry";
+import "salsa20.cry";
 
 let alloc_init ty v = do {
     p <- crucible_alloc ty;

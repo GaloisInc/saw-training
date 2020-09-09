@@ -77,6 +77,61 @@ A C Implementation to Verify
 
 TODO: Walk through the C implementation of Salsa20
 
+.. literalinclude:: examples/salsa20/salsa20.c
+  :language: C
+  :start-after: // BEGIN ROTL
+  :end-before: // END ROTL
+
+.. literalinclude:: examples/salsa20/salsa20.c
+  :language: C
+  :start-after: // BEGIN QUARTERROUND
+  :end-before: // END QUARTERROUND
+
+.. literalinclude:: examples/salsa20/salsa20.c
+  :language: C
+  :start-after: // BEGIN ROWROUND
+  :end-before: // END ROWROUND
+
+.. literalinclude:: examples/salsa20/salsa20.c
+  :language: C
+  :start-after: // BEGIN COLUMNROUND
+  :end-before: // END COLUMNROUND
+
+.. literalinclude:: examples/salsa20/salsa20.c
+  :language: C
+  :start-after: // BEGIN DOUBLEROUND
+  :end-before: // END DOUBLEROUND
+
+.. literalinclude:: examples/salsa20/salsa20.c
+  :language: C
+  :start-after: // BEGIN LITTLEENDIAN
+  :end-before: // END LITTLEENDIAN
+
+.. literalinclude:: examples/salsa20/salsa20.c
+  :language: C
+  :start-after: // BEGIN LITTLEENDIAN_INVERSE
+  :end-before: // END LITTLEENDIAN_INVERSE
+
+.. literalinclude:: examples/salsa20/salsa20.c
+  :language: C
+  :start-after: // BEGIN SALSA20
+  :end-before: // END SALSA20
+
+.. literalinclude:: examples/salsa20/salsa20.c
+  :language: C
+  :start-after: // BEGIN SALSA20_EXPANSION16
+  :end-before: // END SALSA20_EXPANSION16
+
+.. literalinclude:: examples/salsa20/salsa20.c
+  :language: C
+  :start-after: // BEGIN SALSA20_EXPANSION32
+  :end-before: // END SALSA20_EXPANSION32
+
+.. literalinclude:: examples/salsa20/salsa20.c
+  :language: C
+  :start-after: // BEGIN SALSA20_ENCRYPT
+  :end-before: // END SALSA20_ENCRYPT
+
 Specification and Verification
 ------------------------------
 

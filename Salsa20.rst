@@ -28,47 +28,47 @@ A Cryptol Reference Implementation
 
 TODO: Walk through the Cryptol implementation of Salsa20
 
-.. literalinclude:: examples/salsa20/Salsa20.cry
+.. literalinclude:: examples/salsa20/salsa20.cry
   :language: Cryptol
   :start-after: // BEGIN QUARTERROUND
   :end-before: // END QUARTERROUND
 
-.. literalinclude:: examples/salsa20/Salsa20.cry
+.. literalinclude:: examples/salsa20/salsa20.cry
   :language: Cryptol
   :start-after: // BEGIN ROWROUND
   :end-before: // END ROWROUND
 
-.. literalinclude:: examples/salsa20/Salsa20.cry
+.. literalinclude:: examples/salsa20/salsa20.cry
   :language: Cryptol
   :start-after: // BEGIN COLUMNROUND
   :end-before: // END COLUMNROUND
 
-.. literalinclude:: examples/salsa20/Salsa20.cry
+.. literalinclude:: examples/salsa20/salsa20.cry
   :language: Cryptol
   :start-after: // BEGIN DOUBLEROUND
   :end-before: // END DOUBLEROUND
 
-.. literalinclude:: examples/salsa20/Salsa20.cry
+.. literalinclude:: examples/salsa20/salsa20.cry
   :language: Cryptol
   :start-after: // BEGIN LITTLEENDIAN
   :end-before: // END LITTLEENDIAN
 
-.. literalinclude:: examples/salsa20/Salsa20.cry
+.. literalinclude:: examples/salsa20/salsa20.cry
   :language: Cryptol
   :start-after: // BEGIN LITTLEENDIAN_INVERSE
   :end-before: // END LITTLEENDIAN_INVERSE
 
-.. literalinclude:: examples/salsa20/Salsa20.cry
+.. literalinclude:: examples/salsa20/salsa20.cry
   :language: Cryptol
   :start-after: // BEGIN SALSA20
   :end-before: // END SALSA20
 
-.. literalinclude:: examples/salsa20/Salsa20.cry
+.. literalinclude:: examples/salsa20/salsa20.cry
   :language: Cryptol
   :start-after: // BEGIN SALSA20_EXPANSION
   :end-before: // END SALSA20_EXPANSION
 
-.. literalinclude:: examples/salsa20/Salsa20.cry
+.. literalinclude:: examples/salsa20/salsa20.cry
   :language: Cryptol
   :start-after: // BEGIN SALSA20_ENCRYPT
   :end-before: // END SALSA20_ENCRYPT
@@ -137,3 +137,68 @@ Specification and Verification
 ------------------------------
 
 TODO: Walk through the SAWScript specs/verifications
+
+.. literalinclude:: examples/salsa20/salsa20.saw
+  :language: Cryptol
+  :start-after: // BEGIN ALLOC_INIT
+  :end-before: // END ALLOC_INIT
+
+.. literalinclude:: examples/salsa20/salsa20.saw
+  :language: Cryptol
+  :start-after: // BEGIN ALLOC_INIT_READONLY
+  :end-before: // END ALLOC_INIT_READONLY
+
+.. literalinclude:: examples/salsa20/salsa20.saw
+  :language: Cryptol
+  :start-after: // BEGIN PTR_TO_FRESH
+  :end-before: // END PTR_TO_FRESH
+
+.. literalinclude:: examples/salsa20/salsa20.saw
+  :language: Cryptol
+  :start-after: // BEGIN PTR_TO_FRESH_READONLY
+  :end-before: // END PTR_TO_FRESH_READONLY
+
+.. literalinclude:: examples/salsa20/salsa20.saw
+  :language: Cryptol
+  :start-after: // BEGIN ONEPTR_UPDATE
+  :end-before: // END ONEPTR_UPDATE
+
+.. literalinclude:: examples/salsa20/salsa20.saw
+  :language: Cryptol
+  :start-after: // BEGIN QUARTERROUND
+  :end-before: // END QUARTERROUND
+
+.. literalinclude:: examples/salsa20/salsa20.saw
+  :language: Cryptol
+  :start-after: // BEGIN ROWROUND
+  :end-before: // END ROWROUND
+
+.. literalinclude:: examples/salsa20/salsa20.saw
+  :language: Cryptol
+  :start-after: // BEGIN COLUMNROUND
+  :end-before: // END COLUMNROUND
+
+.. literalinclude:: examples/salsa20/salsa20.saw
+  :language: Cryptol
+  :start-after: // BEGIN DOUBLEROUND
+  :end-before: // END DOUBLEROUND
+
+.. literalinclude:: examples/salsa20/salsa20.saw
+  :language: Cryptol
+  :start-after: // BEGIN SALSA20
+  :end-before: // END SALSA20
+
+.. literalinclude:: examples/salsa20/salsa20.saw
+  :language: Cryptol
+  :start-after: // BEGIN SALSA20_EXPANSION
+  :end-before: // END SALSA20_EXPANSION
+
+.. literalinclude:: examples/salsa20/salsa20.saw
+  :language: Cryptol
+  :start-after: // BEGIN SALSA20_ENCRYPT
+  :end-before: // END SALSA20_ENCRYPT
+
+.. literalinclude:: examples/salsa20/salsa20.saw
+  :language: Cryptol
+  :start-after: // BEGIN MAIN
+  :end-before: // END MAIN

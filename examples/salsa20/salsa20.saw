@@ -6,9 +6,21 @@ let alloc_init ty v = do {
     return p;
 };
 
+let alloc_init_readonly ty v = do {
+    p <- crucible_alloc_readonly ty;
+    crucible_points_to p (crucible_term v);
+    return p;
+};
+
 let ptr_to_fresh n ty = do {
     x <- crucible_fresh_var n ty;
     p <- alloc_init ty x;
+    return (x, p);
+};
+
+let ptr_to_fresh_readonly n ty = do {
+    x <- crucible_fresh_var n ty;
+    p <- alloc_init_readonly ty x;
     return (x, p);
 };
 
@@ -19,15 +31,10 @@ let oneptr_update_func n ty f = do {
 };
 
 let quarterround_setup : CrucibleSetup () = do {
-    //ys <- crucible_fresh_var "ys" (llvm_array 4 (llvm_int 32));
-    y0 <- crucible_fresh_var "y0" (llvm_int 32);
-    y1 <- crucible_fresh_var "y1" (llvm_int 32);
-    y2 <- crucible_fresh_var "y2" (llvm_int 32);
-    y3 <- crucible_fresh_var "y3" (llvm_int 32);
-    p0 <- alloc_init (llvm_int 32) {{ y0 }};
-    p1 <- alloc_init (llvm_int 32) {{ y1 }};
-    p2 <- alloc_init (llvm_int 32) {{ y2 }};
-    p3 <- alloc_init (llvm_int 32) {{ y3 }};
+    (y0, p0) <- ptr_to_fresh "y0" (llvm_int 32);
+    (y1, p1) <- ptr_to_fresh "y1" (llvm_int 32);
+    (y2, p2) <- ptr_to_fresh "y2" (llvm_int 32);
+    (y3, p3) <- ptr_to_fresh "y3" (llvm_int 32);
 
     crucible_execute_func [p0, p1, p2, p3];
 
@@ -50,40 +57,30 @@ let doubleround_setup =
 let salsa20_setup =
   oneptr_update_func "seq" (llvm_array 64 (llvm_int 8)) {{ Salsa20 }};
 
-let salsa20_djb_setup = do {
-    (input, ip) <- ptr_to_fresh "input" (llvm_array 16 (llvm_int 32));
-    (_, op) <- ptr_to_fresh "output" (llvm_array 64 (llvm_int 8));
-    crucible_execute_func [op, ip];
-    crucible_points_to op (crucible_term {{
-        Salsa20 (join [ littleendian_inverse x | x <- input ])
-    }});
-};
-
 let salsa20_expansion_32 = do {
-    // (k, pk) <- ptr_to_fresh "k" (llvm_array 32 (llvm_int 8));
-    // (n, pn) <- ptr_to_fresh "n" (llvm_array 16 (llvm_int 8));
-    k <- crucible_fresh_var "k" (llvm_array 32 (llvm_int 8));
-    pk <- crucible_alloc_readonly (llvm_array 32 (llvm_int 8));
-    crucible_points_to pk (crucible_term k);
-    n <- crucible_fresh_var "n" (llvm_array 16 (llvm_int 8));
-    pn <- crucible_alloc_readonly (llvm_array 16 (llvm_int 8));
-    crucible_points_to pn (crucible_term n);
+    (n, pn) <- ptr_to_fresh_readonly "n" (llvm_array 16 (llvm_int 8));
+    (k, pk) <- ptr_to_fresh_readonly "k" (llvm_array 32 (llvm_int 8));
+
     pks <- crucible_alloc (llvm_array 64 (llvm_int 8));
+
     crucible_execute_func [pk, pn, pks];
+
     let rks = {{ Salsa20_expansion`{a=2}(k, n)}};
     crucible_points_to pks (crucible_term rks);
 };
 
 let s20_encrypt32 n = do {
-    (key, pkey) <- ptr_to_fresh "key" (llvm_array 32 (llvm_int 8));
-    (v, pv) <- ptr_to_fresh "nonce" (llvm_array 8 (llvm_int 8));
+    (key, pkey) <- ptr_to_fresh_readonly "key" (llvm_array 32 (llvm_int 8));
+    (v, pv) <- ptr_to_fresh_readonly "nonce" (llvm_array 8 (llvm_int 8));
     (m, pm) <- ptr_to_fresh "buf" (llvm_array n (llvm_int 8));
+
     crucible_execute_func [ pkey
                           , pv
                           , crucible_term {{ 0 : [32] }}
                           , pm
                           , crucible_term {{ `n : [32] }}
                           ];
+
     crucible_points_to pm (crucible_term {{ Salsa20_encrypt (key, v, m) }});
     crucible_return (crucible_term {{ 0 : [32] }});
 };

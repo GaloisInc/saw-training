@@ -1,2 +1,6 @@
 _build
 .vscode
+*.o
+*.bc
+examples/swap/swap
+examples/swap/output

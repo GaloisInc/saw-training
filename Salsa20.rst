@@ -3,7 +3,8 @@ Compositional Verification and Salsa20
 
 This is another complete verification example, focusing on the use of
 *compositional verification* for more complex software systems. In particular,
-we verify the Salsa20 encryption algorithm.
+we verify the Salsa20 encryption algorithm, which reflects what a complete
+verification task may look like in practice.
 
 Key concepts:
 

@@ -8,12 +8,17 @@ start to finish. The problem in question is to swap two ints.
 Key concepts:
 
 * Software correctness
+
   - Correctness requires a specification
   - Specifications can be in English or some kind of code
   - Some specs are close to the problem ("It swaps numbers"), while some are more general and can apply to many things ("it doesn't segfault", "it doesn't leak secrets", etc)
+
 * For important systems, it's far from obvious that they are correct.
+
   - THERAC, etc
+
 * Evidence for correctness
+
   - Individual tests
   - Systematic tests
   - Exhaustive tests - enumerate all cases

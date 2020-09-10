@@ -14,7 +14,15 @@ void swap(uint32_t *x, uint32_t *y) {
 // END SWAP
 
 // BEGIN SWAP_SPEC
-bool swap_spec(void (*fun)(uint32_t *, uint32_t *), uint32_t a, uint32_t b) {
+bool swap_spec(uint32_t a, uint32_t b) {
+    uint32_t x = a, y = b;
+    swap(&x, &y);
+    return x == b && y == a;
+}
+// END SWAP_SPEC
+
+// BEGIN SWAP_SPEC
+bool general_swap_spec(void (*fun)(uint32_t *, uint32_t *), uint32_t a, uint32_t b) {
     uint32_t x = a, y = b;
     (*fun)(&x, &y);
     return x == b && y == a;
@@ -52,7 +60,7 @@ void swap_broken3(uint32_t *x, uint32_t *y) {
 
 void test_swap_function(void (*fun)(uint32_t *, uint32_t *), char *descr, uint32_t x, uint32_t y) {
     printf("[%s] Testing with %u and %u... ", descr, x, y);
-    if (swap_spec(fun, x, y)) {
+    if (general_swap_spec(fun, x, y)) {
         printf("OK\n");
     } else {
         printf("FAILED\n");

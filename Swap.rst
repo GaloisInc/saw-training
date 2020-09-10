@@ -1,18 +1,18 @@
 First Example: Swapping Two Numbers
 ===================================
 
-This is a complete walk-through of a small verification task, from
-start to finish. The problem in question is to swap two ints.
+The more of human life that occurs online, the more important it is that we can trust our computers. Bugs in software have led to `death and serious injury <https://en.wikipedia.org/wiki/Therac-25>`, `public embarassment and economic damage <https://en.wikipedia.org/wiki/Heartbleed>`, and other serious consequences. Repeated experience has shown that careful reading of code is not enough to prevent serious bugs.
 
+Most developers are used to techniques like testing, continuous integration, and thoughtful documentation that can help prevent mistakes from being introduced into a system during its development. These techniques are relatively inexpensive, but they risk missing certain classes of bugs. For the most important systems, like those that protect human life or information security, it can make sense to use full *verification*, in which a program is mathematically proved to be correct.
 
-Key concepts:
+This is a complete walk-through of a small verification task, from start to finish. The program to be verified is a C function that swaps two numbers in memory.
+
 
 * Software correctness
   - Correctness requires a specification
   - Specifications can be in English or some kind of code
   - Some specs are close to the problem ("It swaps numbers"), while some are more general and can apply to many things ("it doesn't segfault", "it doesn't leak secrets", etc)
-* For important systems, it's far from obvious that they are correct.
-  - THERAC, etc
+
 * Evidence for correctness
   - Individual tests
   - Systematic tests
@@ -20,23 +20,28 @@ Key concepts:
   - Verification is kinda like exhaustive testing when the search space is too large
 
 
-Examples:
+The Code
+--------
 
-Start with swap in C. Use this to illustrate the ideas of correctness by comparing to ``xor_swap``, which seems far less obviously OK.
+The program to be verified is ``swap``, below:
 
 .. literalinclude:: examples/swap/swap.c
   :language: C
   :start-after: // BEGIN SWAP
   :end-before: // END SWAP
 
-Write a spec in C, like:
+``swap`` is correct if, after calling it, the new target of the first pointer is the former target of the second pointer, and the new target of the second pointer is the former target of the first pointer. This description is called a *specification*. Specifications can be written in a number of formats, including English sentences, but also in machine-readable forms. The advantage of machine-readable specifications is that they can be used as part of an automated workflow.
+
+An example machine-readable specification for ``swap`` is ``swap_spec``:
 
 .. literalinclude:: examples/swap/swap.c
   :language: C
   :start-after: // BEGIN SWAP_SPEC
   :end-before: // END SWAP_SPEC
 
-How can we use this to construct evidence that ``swap`` is ok?
+This specification is written in C. How can we use this to construct evidence that ``swap`` is ok?
+
+
 
 Make a few kinds of broken swap:
 1. No-op
@@ -156,16 +161,79 @@ The resulting function is:
 Symbolic execution is only typically applicable to programs whose termination doesn't depend on symbolic values. If addition were implemented as::
 
     unsigned int add(unsigned int x, unsigned int y) {
-        TODO insert for loop here
+        for (i = 0; i < y; i ++) {
+            x++;
+        }
+        return x;
     }
+
+then the number of loop iterations would depend on the symbolic value :math:`y`, rather than on some pre-determined concrete number. This means that, each time through the ``for`` loop, two new branches must be explored: one in which the present concrete value of ``i`` is less than the symbolic value of :math:`y`, and on in which it is not. The number of branches to be explored is too large for the execution to terminate in a reasonable amount of time. In other words: symbolic execution is most applicable to programs that "obviously" terminate, or programs in which the number of loop iterations do not depend on which specific input is provided.
+
+Most cryptographic primitives fall into the class of programs for which symbolic execution is a good technique. They typically don't have loops in which the number of iterations depends on specific input values, for instance. 
 
 Running SAW
 -----------
 
+SAW is a tool for extracting functions that model programs, and then applying both automatic and manual reasoning to them. Typically, they will be compared against a specification of some kind. SAW uses a framework called Crucible to symbolically execute imperative programs, while it uses custom simulators for other languages. Crucible is an extensible framework - it is capable of symbolically executing LLVM IR, JVM bytecode, x86 machine code, Rust's MIR internal representation, and a number of others.
+
+The first step to using SAW on ``swap`` is to construct its representation in LLVM IR. It is important to pass ``clang`` the ``-O1`` flag, because important symbols are stripped at higher optimization levels, while lower optimization levels yield code that is less amenable to symbolic execution. It can be convenient to include this in a ``Makefile``:
+
 .. literalinclude:: examples/swap/Makefile
-  :language: C
+  :language: make
   :start-after: # Build commands for swap
   :end-before: # End build commands for swap
+
+
+After building the LLVM bitcode file, the next step is to use SAW to verify that the program meets its specification. SAW is controlled using a special-purpose configuration language called SAWScript. SAWScript contains commands for loading code artifacts, for describing program specifications, for comparing code artifacts to specifications, and for helping SAW in situations when fully automatic proofs are impossible.
+
+The SAWScript to verify ``swap`` is:
+
+.. literalinclude:: examples/swap/swap.saw
+  :linenos:
+
+There are three steps in this verification task:
+
+1. Line 1 loads the LLVM module to be verified.
+2. Lines 3--8 describe a specification to compare the program against.
+3. Line 10 instructs SAW to compare a specific function from the LLVM module to the specification.
+
+The LLVM module is loaded using the ``llvm_load_module`` command. This command takes a string that contains the filename as an argument, and results in the module itself. In SAWScript, the results of a command are saved using the ``<-`` operator; here, the name ``swapmod`` is made to refer to the module.
+
+The program specification can be divided into three main components: a precondition, a description of the arguments, and a postcondition. The precondition describes assumptions made in a specification, and it consists of all the commands before ``crucible_execute_func``. The argument description is the call to ``crucible_execute_func`` --- it specifies the arguments that the function will be called with. Finally, the postcondition describes what should be true after the function has been called. In general, the postcondition can describe facts about pointers and memory layout, but here, it describes only the return value.
+
+.. note::
+
+    SAW is a general-purpose framework for combining a number of simulation tools, proof tools, and solvers. Crucible is an extensible symbolic execution framework that serves as the basis for SAW's LLVM support.
+
+Here, the precondition consists of two invocations of ``crucible_fresh_var``, which creates symbolic variables. This function takes two arguments: a string, which is a user-chosen name that might show up in error messages, and the type for the symbolic variable. After the precondition, the SAWScript variables ``x`` and ``y`` are bound to the respective symbolic values :math:`x` and :math: `y`.
+
+The function is invoked on these symbolic values using the ``crucible_execute_func`` command. C functions like ``swap`` can be provided with arguments that don't necessarily make sense as pure mathematical values, like pointers or arrays. In SAW, mathematical expressions are called *terms*, while this larger collection of values are called *setup values*. The ``crucible_term`` function is used to create a setup value that consists of a term. In this case, the symbolic integers are terms, so both arguments are wrapped in ``crucible_term``.
+
+In the postcondition, it makes sense to specify the return value of the function using ``crucible_return``. In this example, the function is expected to return True, which is represented using the syntax ``{{ 1 : [1] }}``. The curly braces allow terms to be written in a language called Cryptol, which plays an important role in writing SAW specifications. For now, the ``1`` before the colon specifies the Boolean true value, and the ``[1]`` after the colon specifies that it's a 1-bit type (namely, ``bool``).
+
+The entire specification is wrapped in ``do { ... }``. This operator allows commands to be built from other commands. In SAW, specifications are written as commands to allow a flexible notation for describing pre- and postconditions. The ``let`` at the top level defines the name ``swap_is_ok`` to refer to this command, which is not yet run.
+
+Translated to English, ``swap_is_ok`` says:
+
+    Let :math:`x` and :math:`y` be 32-bit integers. The result of calling ``swap_spec`` on them is ``true``.
+
+After verification, we know that this is the case *no matter which integers :math:`x` and :math:`y` are*.
+
+.. note::
+
+    SAWScript distinguishes between defining a name and saving the result of a command. Use ``let`` to define a name, which may refer to a command or a value, and ``<-`` to run a command and save the result under the given name.
+
+Finally, on line 10, the ``crucible_llvm_verify`` command is used to instruct SAW to carry out verification. The important arguments are ``swapmod``, which specifies the LLVM module that contains the code to be verified; ``"swap_spec"``, the function to be symbolically executed; ``swap_is_ok``, the SAW specification to check ``"swap_spec"`` against; and ``abc``, the name of the solver that will check whether the program satisfies the specification. The other two arguments control the use of helpers and details of symbolic execution, and are described later.
+
+.. TODO link
+
+Verification Failures
+---------------------
+
+Not all programs fulfill their specifications. Sometimes, the specification itself is buggy --- it may refer to earlier versions of standards, contain typos, or just not mean what its authors think it means. Other times, programs can contain bugs. Just as testing failures can provide insight into problems and programs, verification failures can enhance programmers' understanding and help find bugs.
+
+
+
 
 Another way to provide evidence is to compare a reference implementation that is clear and trusted to a clever implementation. Use similar techniques to compare xor_swap and swap.
 
@@ -176,3 +244,5 @@ Specs need not be in C itself - show a Cryptol spec for swap, and repeat the exe
 
 Finally, replace swap with rotr3, which maps (a,b,c) to (b,c,a). Update all the prior verification code to show how specs have to evolve with code, and show how verification failures can be used in a kind of "TDD" style.
 
+
+..  LocalWords:  cryptographic

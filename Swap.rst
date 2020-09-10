@@ -1,7 +1,7 @@
 First Example: Swapping Two Numbers
 ===================================
 
-The more of human life that occurs online, the more important it is that we can trust our computers. Bugs in software have led to `death and serious injury <https://en.wikipedia.org/wiki/Therac-25>`, `public embarassment and economic damage <https://en.wikipedia.org/wiki/Heartbleed>`, and other serious consequences. Repeated experience has shown that careful reading of code is not enough to prevent serious bugs.
+The more of human life that occurs online, the more important it is that we can trust our computers. Bugs in software have led to `death and serious injury <https://en.wikipedia.org/wiki/Therac-25>`_, `public embarassment and economic damage <https://en.wikipedia.org/wiki/Heartbleed>`_, and other serious consequences. Repeated experience has shown that careful reading of code is not enough to prevent serious bugs.
 
 Most developers are used to techniques like testing, continuous integration, and thoughtful documentation that can help prevent mistakes from being introduced into a system during its development. These techniques are relatively inexpensive, but they risk missing certain classes of bugs. For the most important systems, like those that protect human life or information security, it can make sense to use full *verification*, in which a program is mathematically proved to be correct.
 
@@ -159,7 +159,9 @@ The resulting function is:
       -x & \text{if $x < 0$}
     \end{cases}
 
-Symbolic execution is only typically applicable to programs whose termination doesn't depend on symbolic values. If addition were implemented as::
+Symbolic execution is only typically applicable to programs whose termination doesn't depend on symbolic values. If addition were implemented as:
+
+.. code-block:: C
 
     unsigned int add(unsigned int x, unsigned int y) {
         for (i = 0; i < y; i ++) {

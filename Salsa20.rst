@@ -28,47 +28,47 @@ A Cryptol Reference Implementation
 
 TODO: Walk through the Cryptol implementation of Salsa20
 
-.. literalinclude:: examples/salsa20/salsa20.cry
+.. literalinclude:: examples/salsa20/Salsa20.cry
   :language: Cryptol
   :start-after: // BEGIN QUARTERROUND
   :end-before: // END QUARTERROUND
 
-.. literalinclude:: examples/salsa20/salsa20.cry
+.. literalinclude:: examples/salsa20/Salsa20.cry
   :language: Cryptol
   :start-after: // BEGIN ROWROUND
   :end-before: // END ROWROUND
 
-.. literalinclude:: examples/salsa20/salsa20.cry
+.. literalinclude:: examples/salsa20/Salsa20.cry
   :language: Cryptol
   :start-after: // BEGIN COLUMNROUND
   :end-before: // END COLUMNROUND
 
-.. literalinclude:: examples/salsa20/salsa20.cry
+.. literalinclude:: examples/salsa20/Salsa20.cry
   :language: Cryptol
   :start-after: // BEGIN DOUBLEROUND
   :end-before: // END DOUBLEROUND
 
-.. literalinclude:: examples/salsa20/salsa20.cry
+.. literalinclude:: examples/salsa20/Salsa20.cry
   :language: Cryptol
   :start-after: // BEGIN LITTLEENDIAN
   :end-before: // END LITTLEENDIAN
 
-.. literalinclude:: examples/salsa20/salsa20.cry
+.. literalinclude:: examples/salsa20/Salsa20.cry
   :language: Cryptol
   :start-after: // BEGIN LITTLEENDIAN_INVERSE
   :end-before: // END LITTLEENDIAN_INVERSE
 
-.. literalinclude:: examples/salsa20/salsa20.cry
+.. literalinclude:: examples/salsa20/Salsa20.cry
   :language: Cryptol
   :start-after: // BEGIN SALSA20
   :end-before: // END SALSA20
 
-.. literalinclude:: examples/salsa20/salsa20.cry
+.. literalinclude:: examples/salsa20/Salsa20.cry
   :language: Cryptol
   :start-after: // BEGIN SALSA20_EXPANSION
   :end-before: // END SALSA20_EXPANSION
 
-.. literalinclude:: examples/salsa20/salsa20.cry
+.. literalinclude:: examples/salsa20/Salsa20.cry
   :language: Cryptol
   :start-after: // BEGIN SALSA20_ENCRYPT
   :end-before: // END SALSA20_ENCRYPT

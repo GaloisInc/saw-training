@@ -9,11 +9,12 @@ This is a complete walk-through of a small verification task, from start to fini
 
 
 * Software correctness
+
   - Correctness requires a specification
   - Specifications can be in English or some kind of code
   - Some specs are close to the problem ("It swaps numbers"), while some are more general and can apply to many things ("it doesn't segfault", "it doesn't leak secrets", etc)
-
 * Evidence for correctness
+
   - Individual tests
   - Systematic tests
   - Exhaustive tests - enumerate all cases

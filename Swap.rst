@@ -346,6 +346,7 @@ The Cryptol definition of ``swap`` uses pattern matching to name the first and s
 Alternatively, the definition could be written without pattern matching. In this case, the first and second elements of the pair are accessed using the ``.1`` and ``.0`` operators. Pairs can be seen as analogous to structs whose fields are named by numbers.
 
 .. code-block:: Cryptol
+
     swap pair = (pair.1, pair.0)
 
 Cryptol is useful in two different ways in SAW: it is used as a standalone specification language, and it also provides a syntax for explicit expressions in SAWScript specification, in which case it occurs in double braces. For instance, in the first specification for ``swap``, the return value ``{{ 1 : [1] }}`` is a Cryptol expression.

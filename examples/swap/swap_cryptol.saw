@@ -1,0 +1,24 @@
+m <- llvm_load_module "swap.bc";
+
+// BEGIN CRYPTOL_IMPORT
+import "Swap.cry";
+// END CRYPTOL_IMPORT
+
+let ptr_to_fresh nm ty = do {
+    x <- crucible_fresh_var nm ty;
+    p <- crucible_alloc ty;
+    crucible_points_to p (crucible_term x);
+    return (x, p);
+};
+
+let i32 = llvm_int 32;
+
+let swap_spec = do {
+    (x, xp) <- ptr_to_fresh "x" i32;
+    (y, yp) <- ptr_to_fresh "y" i32;
+    crucible_execute_func [xp, yp];
+    crucible_points_to xp (crucible_term {{(swap (x,y)).0}});
+    crucible_points_to yp (crucible_term {{(swap (x,y)).1}});
+};
+
+crucible_llvm_verify m "swap" [] true swap_spec abc;

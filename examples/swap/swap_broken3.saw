@@ -1,0 +1,10 @@
+swapmod <- llvm_load_module "swap.bc";
+
+let swap_is_ok = do {
+    x <- crucible_fresh_var "x" (llvm_int 32);
+    y <- crucible_fresh_var "y" (llvm_int 32);
+    crucible_execute_func [crucible_term x, crucible_term y];
+    crucible_return (crucible_term {{ 1 : [1] }});
+};
+
+crucible_llvm_verify swapmod "swap_broken3_spec" [] true swap_is_ok abc;

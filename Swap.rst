@@ -40,41 +40,44 @@ An example machine-readable specification for ``swap`` is ``swap_spec``:
   :start-after: // BEGIN SWAP_SPEC
   :end-before: // END SWAP_SPEC
 
-This specification is written in C. How can we use this to construct evidence that ``swap`` is ok?
+This specification is written in C. It can be used in a number of ways to produce evidence that ``swap`` is correct. Too keep things concrete, here are three broken versions of ``swap``.
 
-
-
-Make a few kinds of broken swap:
-1. No-op
-2. Swap numbers other than 4142351
-3. Dereference a null pointer if one number is the other left-shifted by 5 places
-(these are clearly easy to spot here, but similar issues can be difficult to find in larger, more complex code)
+The first incorrect ``swap`` doesn't actually swap its arguments.
 
 .. literalinclude:: examples/swap/swap.c
   :language: C
   :start-after: // BEGIN SWAP_BROKEN1
   :end-before: // END SWAP_BROKEN1
 
+The second incorrect ``swap`` works correctly for most numbers, but not when its first argument is 4142351.
+
 .. literalinclude:: examples/swap/swap.c
   :language: C
   :start-after: // BEGIN SWAP_BROKEN2
   :end-before: // END SWAP_BROKEN2
+
+The third incorrect ``swap`` dereferences a null pointer when its first argument is :math:`2^5` times its second.
 
 .. literalinclude:: examples/swap/swap.c
   :language: C
   :start-after: // BEGIN SWAP_BROKEN3
   :end-before: // END SWAP_BROKEN3
 
+Testing Programs
+~~~~~~~~~~~~~~~~
 
-Choose some test values
+In the course of writing a program, it's common to test it against some pre-determined examples. These can be a good starting point for a test suite. A function like ``chosen_value_test`` can be used to automate this process.
 
 .. literalinclude:: examples/swap/swap.c
   :language: C
+  :caption: Testing with pre-chosen values
   :start-after: // BEGIN SWAP_CHOSEN_VALUE_TEST
   :end-before: // END SWAP_CHOSEN_VALUE_TEST
 
+There are some downsides to testing only with chosen values, however. First off, these tests are usually compiled by the author of the code, and there is a risk that important values are not tested. This can be ameliorated by a systematic, disciplined approach to choosing test values, but it can never be completely eliminated. This particular test case is likely to catch ``swap_broken1``, but not the other two.
 
-Randomly choose some values
+
+A second approach to testing is to choose many random values at each execution, as in ``random_value_test``. This approach will eventually find mistakes, but it may not do so in a reasonable amount of time for cases like ``swap_broken2``.
 
 .. literalinclude:: examples/swap/swap.c
   :language: C
@@ -82,9 +85,9 @@ Randomly choose some values
   :end-before: // END SWAP_RANDOM_VALUE_TEST
 
 
-Exhaustively check values - figure out how long it takes, and point out the folly
+Finally, it is possible to exhaustively check the values by enumerating and testing all possible combinations. With In the case of two 32-bit integers, this will take longer than the usual human lifespan, so it is not particularly practical for ongoing software development.
 
-Introduce SAW, and the idea of verification, which gives a "for all values" guarantee without actually exploring the whole search space. Discuss symbolic execution, and show (some representation of) the term that SAW creates for swap. Try these with the broken swaps, and interpret the error messages.
+Formal verification is a useful supplement to testing. Like exhaustive testing, verification tools provide full coverage of all inputs, but they need not actually run each case. This is accomplished by reasoning about mathematical models of a program, knocking out huge regions of the state space with single steps. There are many tools and techniques for performing full formal verification, each suitable to different classes of problem. SAW is particularly suited to imperative programs that don't contain potentially-unbounded loops. Verification does tend to be significantly more expensive to implement than systematic testing, both because it requires specialized knowledge and because developing mathematical proofs can take much longer that writing test cases. However, for many programs, automated tools like SAW can be used with similar levels of effort to testing, but resulting in much stronger guarantees. At the same time, checking a proof can sometimes be much faster than testing large parts of the input space, leading to quicker feedback during development.
 
 SAW works in two phases: first, it converts its target program to an internal representation that's more amenable to verification. Then, external solvers are used together with occasional manual guidance to construct proofs.
 
@@ -208,11 +211,11 @@ The program specification can be divided into three main components: a precondit
 
     SAW is a general-purpose framework for combining a number of simulation tools, proof tools, and solvers. Crucible is an extensible symbolic execution framework that serves as the basis for SAW's LLVM support.
 
-Here, the precondition consists of two invocations of ``crucible_fresh_var``, which creates symbolic variables. This function takes two arguments: a string, which is a user-chosen name that might show up in error messages, and the type for the symbolic variable. After the precondition, the SAWScript variables ``x`` and ``y`` are bound to the respective symbolic values :math:`x` and :math: `y`.
+Here, the precondition consists of two invocations of ``crucible_fresh_var``, which creates symbolic variables. Internally, these symbolic variables are represented in the internal language SAWCore. ``crucible_fresh_var`` takes two arguments: a string, which is a user-chosen name that might show up in error messages, and the type for the symbolic variable. After the precondition, the SAWScript variables ``x`` and ``y`` are bound to the respective symbolic values :math:`x` and :math: `y`.
 
-The function is invoked on these symbolic values using the ``crucible_execute_func`` command. C functions like ``swap`` can be provided with arguments that don't necessarily make sense as pure mathematical values, like pointers or arrays. In SAW, mathematical expressions are called *terms*, while this larger collection of values are called *setup values*. The ``crucible_term`` function is used to create a setup value that consists of a term. In this case, the symbolic integers are terms, so both arguments are wrapped in ``crucible_term``.
+The function is invoked on these symbolic values using the ``crucible_execute_func`` command. C functions like ``swap`` can be provided with arguments that don't necessarily make sense as pure mathematical values, like pointers or arrays. In SAW, mathematical expressions are called *terms*, while this larger collection of values are called *setup values*. The ``crucible_term`` function is used to create a setup value that consists of a SAWCore term. In this case, the symbolic integers are SAWCore terms, so both arguments are wrapped in ``crucible_term``.
 
-In the postcondition, it makes sense to specify the return value of the function using ``crucible_return``. In this example, the function is expected to return True, which is represented using the syntax ``{{ 1 : [1] }}``. The curly braces allow terms to be written in a language called Cryptol, which plays an important role in writing SAW specifications. For now, the ``1`` before the colon specifies the Boolean true value, and the ``[1]`` after the colon specifies that it's a 1-bit type (namely, ``bool``).
+In the postcondition, it makes sense to specify the return value of the function using ``crucible_return``. In this example, the function is expected to return True, which is represented using the syntax ``{{ 1 : [1] }}``. The curly braces allow terms to be written in a language called Cryptol, which plays an important role in writing SAW specifications. The ``1`` before the colon specifies the Boolean true value, and the ``[1]`` after the colon specifies that it's a 1-bit type (namely, ``bool``).
 
 The entire specification is wrapped in ``do { ... }``. This operator allows commands to be built from other commands. In SAW, specifications are written as commands to allow a flexible notation for describing pre- and postconditions. The ``let`` at the top level defines the name ``swap_is_ok`` to refer to this command, which is not yet run.
 
@@ -220,13 +223,13 @@ Translated to English, ``swap_is_ok`` says:
 
     Let :math:`x` and :math:`y` be 32-bit integers. The result of calling ``swap_spec`` on them is ``true``.
 
-After verification, we know that this is the case *no matter which integers :math:`x` and :math:`y` are*.
+After verification, we know that this is the case *no matter which integers* :math:`x` and :math:`y` are.
 
 .. note::
 
     SAWScript distinguishes between defining a name and saving the result of a command. Use ``let`` to define a name, which may refer to a command or a value, and ``<-`` to run a command and save the result under the given name.
 
-Finally, on line 10, the ``crucible_llvm_verify`` command is used to instruct SAW to carry out verification. The important arguments are ``swapmod``, which specifies the LLVM module that contains the code to be verified; ``"swap_spec"``, the function to be symbolically executed; ``swap_is_ok``, the SAW specification to check ``"swap_spec"`` against; and ``abc``, the name of the solver that will check whether the program satisfies the specification. The other two arguments control the use of helpers and details of symbolic execution, and are described later.
+Finally, on line 10, the ``crucible_llvm_verify`` command is used to instruct SAW to carry out verification. The important arguments are ``swapmod``, which specifies the LLVM module that contains the code to be verified; ``"swap_spec"``, the function to be symbolically executed; ``swap_is_ok``, the SAW specification to check ``"swap_spec"`` against; and ``abc``, the name of the solver that will check whether the program satisfies the specification. The other two arguments control the use of helpers and details of symbolic execution, and are described later in this tutorial.
 
 .. TODO link
 
@@ -235,15 +238,133 @@ Verification Failures
 
 Not all programs fulfill their specifications. Sometimes, the specification itself is buggy --- it may refer to earlier versions of standards, contain typos, or just not mean what its authors think it means. Other times, programs can contain bugs. Just as testing failures can provide insight into problems and programs, verification failures can enhance programmers' understanding and help find bugs.
 
+Using a similar SAWScript file to attempt to verify ``swap_broken1`` (which simply doesn't swap the inputs) yields the following output in less than half a second::
+
+    [23:52:39.817] ----------Counterexample----------
+    [23:52:39.817]   x: 2147483648
+    [23:52:39.817]   y: 0
+    [23:52:39.817] ----------------------------------
+
+Not only did SAW correctly determine that the program is incorrect, it also provided an example input that can be used for debugging.
+
+For ``swap_broken2``, the following counterexample is found, again in less than half a second::
+
+    [00:07:22.536] ----------Counterexample----------
+    [00:07:22.536]   x: 4142351
+    [00:07:22.536]   y: 4142350
+    [00:07:22.536] ----------------------------------
+
+The value for ``x`` here is the constant in the source code that causes the program to return an incorrect result.
+
+Finally, for ``swap_broken3``, the output notes that a memory load failed during a particular control path. The counterexample provided is::
+
+    [00:11:50.086] ----------Counterexample----------
+    [00:11:50.086]   x: 2147483648
+    [00:11:50.086]   y: 67108864
+    [00:11:50.086] ----------------------------------
+
+2147483648, also known as ``0x4000000``, is indeed the five-bit left shift of 67108864, also known as ``0x80000000``.
+
+Reference Implementations
+-------------------------
+
+Another way to provide a specification is in the form of a reference implementation that is clear and trusted. This can be compared to a clever implementation that may be faster or use less memory. In the case of ``swap``, a classic trick to avoid an intermediate variable is to use a sequence of exclusive-or operations to swap the values.
+
+.. literalinclude:: examples/swap/swap.c
+  :language: C
+  :start-after: // BEGIN XOR_SWAP
+  :end-before: // END XOR_SWAP
+
+This approach is much more clever than the straightforward version with an intermediate variable. SAW can be used to check that they are equivalent. The specification (in C) states that ``xor_swap`` has the same effect as ``swap``:
+
+.. literalinclude:: examples/swap/swap.c
+  :language: C
+  :start-after: // BEGIN XOR_SWAP_SPEC
+  :end-before: // END XOR_SWAP_SPEC
+
+The corresponding SAWScript is almost identical to that used for ``swap_spec`` --- only the name of the C function was replaced. This is because it is stating the same kind of propery: for all possible values of the appropriate LLVM integer type, the function in question returns ``true``.
 
 
+Specifications in SAWScript
+---------------------------
 
-Another way to provide evidence is to compare a reference implementation that is clear and trusted to a clever implementation. Use similar techniques to compare xor_swap and swap.
+Most SAW specifications are not written in C. Instead, they are typically written in a combination of SAWScript and a language called Cryptol. The specification for ``swap`` can be translated directly to SAWScript itself, as follows:
 
-Specs need not be in C itself - show a Cryptol spec for swap, and repeat the exercise. Discuss only the Cryptol features we use here, and motivate it as a language that is close to the math with extra tools to validate specs.
+.. literalinclude:: examples/swap/swap_direct.saw
+  :start-after: // BEGIN SWAP_SPEC
+  :end-before: // END SWAP_SPEC
+
+This specification begins by declaring the symbolic values ``x`` and ``y``, just as before. The next step is to establish a pointer to each symbolic value, because ``swap`` takes pointers as arguments. Establishing a pointer consists of two steps: the first, using ``crucible_alloc``, creates a setup value that represents an abstract pointer to nothing in particular; and the second, using ``crucible_points_to``, asserts that the pointer actually points at the symbolic value. In the postcondition (after the ``crucible_execute_func`` call),  ``crucible_points_to`` is used to assert that the pointers now point at the other value.
+
+Writing a specification in SAWScript instead of C has a number of advantages:
+
+1. Program code that's intended to be executed is cleanly separated from build-time verification code.
+
+2. SAWScript allows specifications or reference implementations in a variety of languages to be used, which enables specifications to be written in the language that best suits them.
+
+3. SAWScript specifications enable a much more precise description of things like memory layouts.
+
+4. SAWScript interfaces with code at the level of LLVM bitcode, rather than C, which means that there is a lower risk of being caught by undefined behavior.
+
+Because SAWScript is a programming language, this specification can be refactored to remove some of the duplication. The first step is to extract the repeated type name:
+
+.. literalinclude:: examples/swap/swap_direct_refactored.saw
+  :start-after: // BEGIN TYPE
+  :end-before: // END TYPE
+
+Now, invocations of ``llvm_int 32`` can be replaced with ``i32``.
+
+The next step is to extract the repeated pattern of declaring a symbolic value, allocating a pointer, and arranging for the pointer to point at the value.
+
+.. literalinclude:: examples/swap/swap_direct_refactored.saw
+  :start-after: // BEGIN POINTER_TO_FRESH
+  :end-before: // END POINTER_TO_FRESH
+
+``pointer_to_fresh`` is defined to take the arguments ``name`` and ``type``. While ``i32`` is defined as a constant, ``pointer_to_fresh`` is a command, because its right-hand side is a sequence of other commands that are combined using ``do``.  This new command returns both the symbolic value and its pointer in a pair.
+
+The final specification is much shorter:
+
+.. literalinclude:: examples/swap/swap_direct_refactored.saw
+  :start-after: // BEGIN SWAP_SPEC
+  :end-before: // END SWAP_SPEC
 
 
+Cryptol
+-------
 
+SAWScript has good facilities for describing memory layouts and pre- and postconditions, but not for specifying algorithms. It is often used together with Cryptol, a domain-specific language for implementing low-level cryptographic algorithms or DSP transforms that reads much like a mathematical description. This helps bridge the gap between formal descriptions and real implementations.
+
+A Cryptol specification for ``swap`` looks like this:
+
+.. literalinclude:: examples/swap/Swap.cry
+  :language: Cryptol
+
+The first line of the file is a module header. It states that the current module is named ``Swap``. The remainder of the file is a type declaration and a specification. The type declaration reads: "For all types ``a``, ``swap`` maps pairs in which both fields have ``a`` into pairs in which both fields have type ``a``. It is comparable to a signature like ``Pair <A, A> swap<A>(Pair<A, A>)`` in a language like Java. The ``{a}`` introduces the type variable, similarly to the ``<A>`` in the Java signature, and the argument type comes before the ``->``.
+
+The Cryptol definition of ``swap`` uses pattern matching to name the first and second elements of the incoming pair as ``x`` and ``y`` respectively. The right side of the ``=`` specifies the return value as the two elements in opposite positions.
+
+Alternatively, the definition could be written without pattern matching. In this case, the first and second elements of the pair are accessed using the ``.1`` and ``.0`` operators. Pairs can be seen as analogous to structs whose fields are named by numbers.
+
+.. code-block:: Cryptol
+    swap pair = (pair.1, pair.0)
+
+Cryptol is useful in two different ways in SAW: it is used as a standalone specification language, and it also provides a syntax for explicit expressions in SAWScript specification, in which case it occurs in double braces. For instance, in the first specification for ``swap``, the return value ``{{ 1 : [1] }}`` is a Cryptol expression.
+
+.. TODO add internal link to the {{ 1 : [1] }}
+
+The first step in using a Cryptol specification for ``swap`` is to load the Cryptol module.
+
+.. literalinclude:: examples/swap/swap_cryptol.saw
+  :start-after: // BEGIN CRYPTOL_IMPORT
+  :end-before: // END CRYPTOL_IMPORT
+
+After that, the specification uses the double-brace notation to include invocations of Cryptol functions. The syntax ``(swap (x, y)).0`` means to take the first element of the result of swapping ``x`` and ``y``.
+
+.. literalinclude:: examples/swap/swap_cryptol.saw
+  :start-after: // BEGIN SWAP_SPEC
+  :end-before: // END SWAP_SPEC
+
+Note that the Cryptol snippets can refer to both ``swap`` and to ``x`` and ``y``. The Cryptol snippets can refer to anything imported from a Cryptol module with ``import``, and also to any name in scope that refers to a SAWCore term. In other words, the SAWScript name ``x`` can also be used as a Cryptol name to point at a SAWCore term.
 
 Finally, replace swap with rotr3, which maps (a,b,c) to (b,c,a). Update all the prior verification code to show how specs have to evolve with code, and show how verification failures can be used in a kind of "TDD" style.
 

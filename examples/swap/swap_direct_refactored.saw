@@ -1,0 +1,33 @@
+swapmod <- llvm_load_module "swap.bc";
+
+
+// BEGIN TYPE
+let i32 = llvm_int 32;
+// END TYPE
+
+// BEGIN POINTER_TO_FRESH
+let pointer_to_fresh name type = do {
+    x <- crucible_fresh_var name type;
+    xp <- crucible_alloc type;
+    crucible_points_to xp (crucible_term x);
+    return (x, xp);
+};
+// END POINTER_TO_FRESH
+
+// BEGIN SWAP_SPEC
+let swap_spec = do {
+    (x, xp) <- pointer_to_fresh "x" i32;
+    (y, yp) <- pointer_to_fresh "y" i32;
+
+    crucible_execute_func [xp, yp];
+
+    crucible_points_to yp (crucible_term x);
+    crucible_points_to xp (crucible_term y);
+};
+// END SWAP_SPEC
+
+// Verify swap
+crucible_llvm_verify swapmod "swap" [] true swap_spec abc;
+
+// Verify xor_swap
+crucible_llvm_verify swapmod "xor_swap" [] true swap_spec abc;

@@ -1,0 +1,24 @@
+swapmod <- llvm_load_module "swap.bc";
+
+// BEGIN SWAP_SPEC
+let swap_spec = do {
+    x <- crucible_fresh_var "x" (llvm_int 32);
+    xp <- crucible_alloc (llvm_int 32);
+    crucible_points_to xp (crucible_term x);
+
+    y <- crucible_fresh_var "y" (llvm_int 32);
+    yp <- crucible_alloc (llvm_int 32);
+    crucible_points_to yp (crucible_term y);
+
+    crucible_execute_func [xp, yp];
+
+    crucible_points_to yp (crucible_term x);
+    crucible_points_to xp (crucible_term y);
+};
+// END SWAP_SPEC
+
+// Verify swap
+crucible_llvm_verify swapmod "swap" [] true swap_spec abc;
+
+// Verify xor_swap
+crucible_llvm_verify swapmod "xor_swap" [] true swap_spec abc;

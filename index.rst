@@ -14,6 +14,7 @@ Welcome to SAW!
    Example 2 <Example2>
    Salsa20
    HMAC
+   Glossary
 
 
 Indices and tables

@@ -1,0 +1,4 @@
+module Rotr3 where
+
+rotr3 : {a} (a, a, a) -> (a, a, a)
+rotr3 (x, y, z) = (z, x, y)

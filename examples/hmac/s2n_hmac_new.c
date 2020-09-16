@@ -18,7 +18,7 @@
 
 #include "s2n_errno.h"
 
-#include "s2n_hmac.h"
+#include "s2n_hmac_new.h"
 #include "s2n_hash.h"
 #include "s2n_fips.h"
 

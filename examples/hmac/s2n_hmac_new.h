@@ -31,6 +31,7 @@ typedef enum {
     S2N_HMAC_SSLv3_SHA1
 } s2n_hmac_algorithm;
 
+// BEGIN S2N_HMAC_STATE_STRUCT
 struct s2n_hmac_state {
     s2n_hmac_algorithm alg;
 
@@ -42,7 +43,7 @@ struct s2n_hmac_state {
     struct s2n_hash_state inner;
     struct s2n_hash_state inner_just_key;
     struct s2n_hash_state outer;
-    struct s2n_hash_state outer_just_key;
+    struct s2n_hash_state outer_just_key; // NEW FIELD
 
 
     /* key needs to be as large as the biggest block size */
@@ -51,6 +52,7 @@ struct s2n_hmac_state {
     /* For storing the inner digest */
     uint8_t digest_pad[SHA512_DIGEST_LENGTH];
 };
+// END S2N_HMAC_STATE_STRUCT
 
 struct s2n_hmac_evp_backup {
     struct s2n_hash_evp_digest inner;

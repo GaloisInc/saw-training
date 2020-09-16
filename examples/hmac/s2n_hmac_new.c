@@ -205,15 +205,17 @@ int s2n_hmac_hash_block_size(s2n_hmac_algorithm hmac_alg, uint16_t *block_size)
     return 0;
 }
 
+// BEGIN S2N_HMAC_NEW
 int s2n_hmac_new(struct s2n_hmac_state *state)
 {
     GUARD(s2n_hash_new(&state->inner));
     GUARD(s2n_hash_new(&state->inner_just_key));
     GUARD(s2n_hash_new(&state->outer));
-    GUARD(s2n_hash_new(&state->outer_just_key));
+    GUARD(s2n_hash_new(&state->outer_just_key)); // NEW ALLOCATION
 
     return 0;
 }
+// END S2N_HMAC_NEW
 
 int s2n_hmac_init(struct s2n_hmac_state *state, s2n_hmac_algorithm alg, const void *key, uint32_t klen)
 {

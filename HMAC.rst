@@ -1,30 +1,60 @@
-Simple Proof Maintenance: HMAC
-==============================
+Maintaining Proofs: s2n HMAC
+============================
 
-As code evolves, specifications of it and proofs of those specifications evolve
-as well. This section covers *proof maintenance*: How, after some changes to a
-piece of code, specifications and SAW proof scripts must be updated to reflect
-those changes. We use a real example of necessary proof maintenance taken from
-the HMAC implementation in the Amazon s2n repository.
+As mentioned in :ref:`swap-code-evolution`, the evolution of a program is
+accompanied by the evolution of its specifications. The maintenance of a tight
+correspondence between a software system, its specifications, and the proofs
+that these specifications are satisfied can be accomplished fairly easily with
+SAW and Cryptol.
 
-Key concepts:
+The tasks necessary to keep a program and the verifications performed on it
+consistent fall under the umbrella of *proof maintenance*. This section shows
+proof maintenance on a real example, adapted from `these changes to the HMAC
+implementation underlying Amazon's s2n <https://github.com/awslabs/s2n/commit/e283d76f966828f27002dea7c7c0bd9865fea926>`_.
+Note that the code has been modified slightly to better suit this tutorial.
 
-* Proof maintenance
+Throughout, take note of the very direct correspondence between the changes to
+the code and the changes to the specifications; it will help to follow along
+yourself in the provided ``examples/hmac`` directory.
 
-  - Changes to code which has been verified with respect to some specification
-    often demand updates to that same specification and proof.
-  - Complexity of changes to specification/proof script roughly correlate with
-    the complexity of changes to the underlying software system being verified.
 
-* SAW/Cryptol practice
+Implementation Overview
+-----------------------
 
-HMAC Implementation and Verification: Pre-Update
-------------------------------------------------
+TODO: Give a brief overview of how the HMAC implementation is laid out,
+including reference implementations etc
 
-The HMAC implementation
 
-The HMAC Update
----------------
+C Implementation Updates
+------------------------
 
-Updating the Specification and Proof
-------------------------------------
+The s2n HMAC implementation needed to be updated to make use of an additional
+piece of hashing state, ``outer_just_key`` (mirroring the already extant
+``inner_just_key``). At its core, this change is captured by the addition of
+a new field to the ``s2n_hmac_state`` struct as it is defined in
+``s2n_hmac_old.h``. The resulting struct looks like this:
+
+.. literalinclude:: examples/hmac/s2n_hmac_new.h
+  :language: C
+  :caption: The updated definition of ``struct s2n_hmac_state``
+  :start-after: // BEGIN S2N_HMAC_STATE_STRUCT
+  :end-before: // END S2N_HMAC_STATE_STRUCT
+
+The addition of this new field saw corresponding changes to the implementation
+code, which can be found in ``s2n_hmac_new.c``, including memory allocations,
+initializations, updates, and frees. To highlight the types of implementation
+changes involved, consider this code sample:
+
+.. literalinclude:: examples/hmac/s2n_hmac_new.c
+  :language: C
+  :caption: A sample of the changes introduced in the referenced commit
+  :start-after: // BEGIN S2N_HMAC_NEW
+  :end-before: // END S2N_HMAC_NEW
+
+Such updates can be found throughout the code; you're encouraged to explore the
+diff between ``s2n_hmac_old.c`` and ``s2n_hmac_new.c`` to have a better
+understanding of the changes implemented here.
+
+
+Updating the Specifications
+---------------------------

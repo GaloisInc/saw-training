@@ -4,3 +4,4 @@ _build
 *.bc
 examples/swap/swap
 examples/swap/output
+helpers/__pycache__

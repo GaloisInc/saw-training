@@ -1,0 +1,24 @@
+m <- llvm_load_module "rotr3.bc";
+
+import "Rotr3.cry";
+
+let pointer_to_fresh name type = do {
+    x <- crucible_fresh_var name type;
+    p <- crucible_alloc type;
+    crucible_points_to p (crucible_term x);
+    return (x, p);
+};
+
+let i32 = llvm_int 32;
+
+let rotr3_spec = do {
+    (x, xp) <- pointer_to_fresh "x" i32;
+    (y, yp) <- pointer_to_fresh "y" i32;
+    (z, zp) <- pointer_to_fresh "z" i32;
+    crucible_execute_func [xp, yp, zp];
+    crucible_points_to xp (crucible_term {{(rotr3 (x, y, z)).0}});
+    crucible_points_to yp (crucible_term {{(rotr3 (x, y, z)).1}});
+    crucible_points_to zp (crucible_term {{(rotr3 (x, y, z)).2}});
+};
+
+crucible_llvm_verify m "swap" [] true rotr3_spec abc;

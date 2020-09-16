@@ -17,7 +17,7 @@
 
 #include <openssl/evp.h>
 
-#include "crypto/s2n_openssl.h"
+#include "s2n_openssl.h"
 
 struct s2n_evp_digest {
     const EVP_MD *md;

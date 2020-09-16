@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "utils/s2n_blob.h"
+#include "s2n_blob.h"
 
 #include <stdint.h>
 

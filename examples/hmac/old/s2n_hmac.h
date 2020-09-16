@@ -17,7 +17,7 @@
 
 #include <stdint.h>
 
-#include "crypto/s2n_hash.h"
+#include "s2n_hash.h"
 
 typedef enum {
     S2N_HMAC_NONE,

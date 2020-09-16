@@ -35,7 +35,7 @@
 
 #endif
 
-#include "crypto/s2n_evp.h"
+#include "s2n_evp.h"
 
 #include <openssl/evp.h>
 

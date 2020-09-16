@@ -19,7 +19,7 @@
 #include <sys/types.h>
 #include <stdint.h>
 
-#include "error/s2n_errno.h"
+#include "s2n_errno.h"
 
 /* NULL check a pointer */
 #define notnull_check( ptr )           do { if ( (ptr) == NULL ) { S2N_ERROR(S2N_ERR_NULL); } } while(0)

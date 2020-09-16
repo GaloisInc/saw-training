@@ -4,6 +4,10 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+import os
+import sys
+
+
 # -- Path setup --------------------------------------------------------------
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -54,3 +58,8 @@ html_theme = 'sphinx_rtd_theme'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+def setup(sphinx):
+    sys.path.insert(0, os.path.abspath('./helpers'))
+    from saw_lexer import SAWScriptLexer
+    sphinx.add_lexer("SAWScript", SAWScriptLexer)

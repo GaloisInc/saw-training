@@ -3,16 +3,17 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to SAW!
-===============
+Program Verification with SAW
+=============================
+
+SAW, the Software Analysis Workbench, is a tool for program verification. This example-driven tutorial demonstrates how to use SAW for common tasks and how to integrate it into the software development lifecycle.
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   Swap
-   Example 2 <Example2>
-   Salsa20
+   Specifications and Verification <Swap>
+   Compositional Verification of Salsa20 <Salsa20>
    HMAC
    Glossary
 

@@ -13,26 +13,31 @@ proof maintenance on a real example, adapted from `these changes to the HMAC
 implementation underlying Amazon's s2n <https://github.com/awslabs/s2n/commit/e283d76f966828f27002dea7c7c0bd9865fea926>`_.
 Note that the code has been modified slightly to better suit this tutorial.
 
-Throughout, take note of the very direct correspondence between the changes to
-the code and the changes to the specifications; it will help to follow along
-yourself in the provided ``examples/hmac`` directory.
+This task will be approached as if the changes to the 'real' implementation are
+given, and the goal will be to evolve the relevant specifications to
+match. Throughout, take note of the very direct correspondence between the
+changes to the code and the changes to the specifications - it will help to
+follow along yourself in the provided ``examples/hmac`` directory.
 
 
-Implementation Overview
------------------------
+s2n HMAC Summary
+----------------
 
 TODO: Give a brief overview of how the HMAC implementation is laid out,
 including reference implementations etc
 
 
-C Implementation Updates
-------------------------
+The Updates to the 'Real' Implementation
+----------------------------------------
+
+This section provides an overview of the changes to the real implementation
+that demand some level of proof maintenance.
 
 The s2n HMAC implementation needed to be updated to make use of an additional
 piece of hashing state, ``outer_just_key`` (mirroring the already extant
 ``inner_just_key``). At its core, this change is captured by the addition of
-a new field to the ``s2n_hmac_state`` struct as it is defined in
-``s2n_hmac_old.h``. The resulting struct looks like this:
+a new field to the ``s2n_hmac_state`` structure as it is defined in
+``s2n_hmac_old.h``. The resulting structure looks like this:
 
 .. literalinclude:: examples/hmac/s2n_hmac_new.h
   :language: C
@@ -41,9 +46,9 @@ a new field to the ``s2n_hmac_state`` struct as it is defined in
   :end-before: // END S2N_HMAC_STATE_STRUCT
 
 The addition of this new field saw corresponding changes to the implementation
-code, which can be found in ``s2n_hmac_new.c``, including memory allocations,
-initializations, updates, and frees. To highlight the types of implementation
-changes involved, consider this code sample:
+code, which can be found in ``s2n_hmac_new.c``. These changes included memory
+allocations, initializations, updates, and frees. The following code sample
+gives a good sense of the types of changes involved:
 
 .. literalinclude:: examples/hmac/s2n_hmac_new.c
   :language: C
@@ -51,10 +56,34 @@ changes involved, consider this code sample:
   :start-after: // BEGIN S2N_HMAC_NEW
   :end-before: // END S2N_HMAC_NEW
 
-Such updates can be found throughout the code; you're encouraged to explore the
-diff between ``s2n_hmac_old.c`` and ``s2n_hmac_new.c`` to have a better
-understanding of the changes implemented here.
+Similar updates can be found throughout the code; you're encouraged to explore
+the diff between ``s2n_hmac_old.c`` and ``s2n_hmac_new.c`` to have a better
+understanding of all of the changes implemented here.
+
+More interesting, though, is the fact that knowing these changes, it is
+possible to estimate reasonably what will need to change among reference
+implementations, specifications, and proof scripts verifying that these
+specifications are met. In this case, one might guess that it will be
+necessary to complete the following tasks as proof maintenance:
+
+* Add the new field to the correct type(s) in the Cryptol reference
+  implementation
+* Add the relevant implementation details to the function(s) using the changed
+  type
+* Update the SAWScript to reflect the new memory layouts, initializations, etc
+  implied by the updated type
+
+Indeed, these expected next steps are precisely how the verification of s2n
+HMAC must evolve to account for the code updates explained above.
+
+
+Updating the Reference Implementation
+-------------------------------------
+
+TODO: Show the Cryptol changes
 
 
 Updating the Specifications
 ---------------------------
+
+TODO: Show the SAWScript changes

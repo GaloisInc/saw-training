@@ -378,6 +378,8 @@ After that, the specification uses the double-brace notation to include invocati
 
 Note that the Cryptol snippets can refer to both ``swap`` and to ``x`` and ``y``. The Cryptol snippets can refer to anything imported from a Cryptol module with ``import``, and also to any name in scope that refers to a :term:`SAWCore` term. In other words, the :term:`SAWScript` name ``x`` can also be used as a Cryptol name to point at a :term:`SAWCore` term.
 
+.. _swap-code-evolution:
+
 Evolving Specifications and Code Together
 -----------------------------------------
 

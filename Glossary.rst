@@ -6,6 +6,9 @@ Glossary
   Cryptol
     A specification language for algorithms. Used as the notation for :term:`SAWCore` in :term:`SAWScript`.
 
+  proof maintenance
+    The process of keeping verification artifacts, such as specifications and proofs, up to date with changes in a software system over time.
+
   SAWCore
     The internal representation for programs in SAW.
 

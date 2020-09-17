@@ -180,6 +180,6 @@ implementation:
 
 With this (and the analogous changes not shown here for brevity), the
 specifications have been updated to account for the changes to the
-implementation. As before, you are encouraged to look at the complete diff
-between ``HMAC_old.saw`` and ``HMAC_new.saw`` to develop a more complete
-understanding of what a proof maintenance task entails.
+implementation. As before, you are encouraged to look at the diff between
+``HMAC_old.saw`` and ``HMAC_new.saw`` to develop a more complete understanding
+of what a proof maintenance task entails.

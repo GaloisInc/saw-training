@@ -43,7 +43,7 @@ struct s2n_hmac_state {
     struct s2n_hash_state inner;
     struct s2n_hash_state inner_just_key;
     struct s2n_hash_state outer;
-    struct s2n_hash_state outer_just_key; // NEW FIELD
+    struct s2n_hash_state outer_just_key;
 
 
     /* key needs to be as large as the biggest block size */

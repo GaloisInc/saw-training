@@ -82,7 +82,7 @@ type HMAC_c_state =
   , inner                   : SHA512_c_state
   , inner_just_key          : SHA512_c_state
   , outer                   : SHA512_c_state
-  , outer_just_key          : SHA512_c_state // NEW FIELD
+  , outer_just_key          : SHA512_c_state
   , xor_pad                 : [128][8]
   , digest_pad              : [SHA512_DIGEST_LENGTH][8]
   }

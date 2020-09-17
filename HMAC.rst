@@ -44,6 +44,8 @@ a new field to the ``s2n_hmac_state`` structure as it is defined in
   :caption: The updated definition of ``struct s2n_hmac_state``
   :start-after: // BEGIN S2N_HMAC_STATE_STRUCT
   :end-before: // END S2N_HMAC_STATE_STRUCT
+  :emphasize-lines: 12
+  :linenos:
 
 The addition of this new field saw corresponding changes to the implementation
 code, which can be found in ``s2n_hmac_new.c``. These changes included memory
@@ -55,10 +57,12 @@ gives a good sense of the types of changes involved:
   :caption: A sample of the changes introduced in the referenced commit
   :start-after: // BEGIN S2N_HMAC_NEW
   :end-before: // END S2N_HMAC_NEW
+  :emphasize-lines: 6
+  :linenos:
 
 Similar updates can be found throughout the code; you're encouraged to explore
 the diff between ``s2n_hmac_old.c`` and ``s2n_hmac_new.c`` to have a better
-understanding of all of the changes implemented here.
+understanding of all of the changes implemented.
 
 More interesting, though, is the fact that knowing these changes, it is
 possible to estimate reasonably what will need to change among reference
@@ -70,11 +74,11 @@ necessary to complete the following tasks as proof maintenance:
   implementation
 * Add the relevant implementation details to the function(s) using the changed
   type
-* Update the SAWScript to reflect the new memory layouts, initializations, etc
+* Update the SAWScript to reflect new memory layouts, initializations, etc
   implied by the updated type
 
 Indeed, these expected next steps are precisely how the verification of s2n
-HMAC must evolve to account for the code updates explained above.
+HMAC must evolve to account for the code updates.
 
 
 Updating the Reference Implementation
@@ -95,30 +99,28 @@ like so:
   :caption: The updated definition of ``HMAC_c_state``
   :start-after: // BEGIN HMAC_C_STATE
   :end-before: // END HMAC_C_STATE
+  :emphasize-lines: 10
+  :linenos:
 
 This very clearly corresponds to the change to the ``s2n_hmac_state`` structure
 described above, other than the specialization to a particular hashing
 algorithm.
 
 As above, here is a sample of how the functions making use of the
-`HMAC_c_state` type must change:
+``HMAC_c_state`` type must change:
 
 .. literalinclude:: examples/hmac/HMAC_iterative_new.cry
   :language: Cryptol
   :start-after: // BEGIN HMAC_INIT_C_STATE
   :end-before: // END HMAC_INIT_C_STATE
+  :emphasize-lines: 24,40-42
+  :linenos:
 
-The changes from the version in ``HMAC_iterative_old.cry`` are:
-
-* Initialization of the added field
-* Zeroing out the ``xor_pad`` field
-
-These two changes are also present in the C implementation; the latter appears
-in the code as a call to ``memset`` on the ``xor_pad`` field. You are again
-encouraged to explore the diff between ``HMAC_iterative_old.cry`` and
-``HMAC_iterative_new.cry`` to develop a better understanding of all the
-necessary updates - this can be usefully supplemented by also comparing to the
-C implementations.
+These changes are, of course, present in the implementation of the analogous C
+function. You are once again encouraged to explore the diff between
+``HMAC_iterative_old.cry`` and ``HMAC_iterative_new.cry`` to develop a better
+understanding - This will be especially useful if the changes to the reference
+are compared to their analogues in the 'real' implementation.
 
 
 Updating the Specifications

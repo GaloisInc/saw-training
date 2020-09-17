@@ -211,7 +211,7 @@ int s2n_hmac_new(struct s2n_hmac_state *state)
     GUARD(s2n_hash_new(&state->inner));
     GUARD(s2n_hash_new(&state->inner_just_key));
     GUARD(s2n_hash_new(&state->outer));
-    GUARD(s2n_hash_new(&state->outer_just_key)); // NEW ALLOCATION
+    GUARD(s2n_hash_new(&state->outer_just_key));
 
     return 0;
 }

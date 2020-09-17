@@ -34,8 +34,8 @@ This section provides an overview of the changes to the real implementation
 that demand some level of proof maintenance.
 
 The s2n HMAC implementation needed to be updated to make use of an additional
-piece of hashing state, ``outer_just_key`` (mirroring the already extant
-``inner_just_key``). At its core, this change is captured by the addition of
+piece of hashing state, ``outer_just_key``, for the implementation of TLS.
+At its core, this change is captured by the addition of
 a new field to the ``s2n_hmac_state`` structure as it is defined in
 ``s2n_hmac_old.h``. The resulting structure looks like this:
 
@@ -80,7 +80,45 @@ HMAC must evolve to account for the code updates explained above.
 Updating the Reference Implementation
 -------------------------------------
 
-TODO: Show the Cryptol changes
+In order for verification to go through, the reference implementation (that is,
+the implementation we trust as correct) must be updated to reflect the
+existence of the new state field introduced above. Due to the close-to-the-math
+nature of Cryptol, this should be a small enough change that faith in the
+correctness of the reference is not lost.
+
+The Cryptol type corresponding to the updated state container must, like the C
+structure, be augmented with an ``outer_just_key`` field of appropriate type,
+like so:
+
+.. literalinclude:: examples/hmac/HMAC_iterative_new.cry
+  :language: Cryptol
+  :caption: The updated definition of ``HMAC_c_state``
+  :start-after: // BEGIN HMAC_C_STATE
+  :end-before: // END HMAC_C_STATE
+
+This very clearly corresponds to the change to the ``s2n_hmac_state`` structure
+described above, other than the specialization to a particular hashing
+algorithm.
+
+As above, here is a sample of how the functions making use of the
+`HMAC_c_state` type must change:
+
+.. literalinclude:: examples/hmac/HMAC_iterative_new.cry
+  :language: Cryptol
+  :start-after: // BEGIN HMAC_INIT_C_STATE
+  :end-before: // END HMAC_INIT_C_STATE
+
+The changes from the version in ``HMAC_iterative_old.cry`` are:
+
+* Initialization of the added field
+* Zeroing out the ``xor_pad`` field
+
+These two changes are also present in the C implementation; the latter appears
+in the code as a call to ``memset`` on the ``xor_pad`` field. You are again
+encouraged to explore the diff between ``HMAC_iterative_old.cry`` and
+``HMAC_iterative_new.cry`` to develop a better understanding of all the
+necessary updates - this can be usefully supplemented by also comparing to the
+C implementations.
 
 
 Updating the Specifications

@@ -161,6 +161,8 @@ let setup_hmac_state alg0 hash_block_size0 block_size0 digest_size0 = do {
     let digest_size = eval_size {| SHA512_DIGEST_LENGTH |};
     digest_pad0 <- crucible_fresh_var "digest_pad" (llvm_array digest_size (llvm_int 8));
 
+    // BEGIN HMAC_MEM_LAYOUT_OLD
+    // ...
     crucible_points_to (crucible_elem pstate 0) (crucible_term alg0);
     crucible_points_to (crucible_elem pstate 1) (crucible_term hash_block_size0);
     crucible_points_to (crucible_elem pstate 2) (crucible_term currently_in_hash_block0);
@@ -171,7 +173,11 @@ let setup_hmac_state alg0 hash_block_size0 block_size0 digest_size0 = do {
     outer0 <- setup_hash_state (crucible_elem pstate 7);
     crucible_points_to (crucible_elem pstate 8) (crucible_term xor_pad0);
     crucible_points_to (crucible_elem pstate 9) (crucible_term digest_pad0);
+    // ...
+    // END HMAC_MEM_LAYOUT_OLD
 
+    // BEGIN HMAC_CRYPTOL_OLD
+    // ...
     let st0 = {{
         { alg                     = alg0
         , hash_block_size         = hash_block_size0
@@ -185,6 +191,8 @@ let setup_hmac_state alg0 hash_block_size0 block_size0 digest_size0 = do {
         , digest_pad              = digest_pad0
         }
       }};
+    // ...
+    // END HMAC_CRYPTOL_OLD
     return (pstate, st0);
 };
 

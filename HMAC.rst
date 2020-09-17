@@ -55,9 +55,9 @@ gives a good sense of the types of changes involved:
 .. literalinclude:: examples/hmac/s2n_hmac_new.c
   :language: C
   :caption: A sample of the changes introduced in the referenced commit
-  :start-after: // BEGIN S2N_HMAC_NEW
-  :end-before: // END S2N_HMAC_NEW
-  :emphasize-lines: 6
+  :start-after: // BEGIN S2N_TLS_HMAC_INIT
+  :end-before: // END S2N_TLS_HMAC_INIT
+  :emphasize-lines: 9,36-37
   :linenos:
 
 Similar updates can be found throughout the code; you're encouraged to explore
@@ -116,11 +116,11 @@ As above, here is a sample of how the functions making use of the
   :emphasize-lines: 24,40-42
   :linenos:
 
-These changes are, of course, present in the implementation of the analogous C
-function. You are once again encouraged to explore the diff between
-``HMAC_iterative_old.cry`` and ``HMAC_iterative_new.cry`` to develop a better
-understanding - This will be especially useful if the changes to the reference
-are compared to their analogues in the 'real' implementation.
+Take note of how similar these changes are to those in the analogous C code
+shown above; this is true more generally, and you are encouraged to explore
+this further in the diff between ``HMAC_iterative_old.cry`` and
+``HMAC_iterative_new.cry``, paying special attention to how these updates
+relate to those between ``s2n_hmac_old.c`` and ``s2n_hmac_new.c``.
 
 
 Updating the Specifications

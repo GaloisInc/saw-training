@@ -127,7 +127,7 @@ static int s2n_sslv3_mac_digest(struct s2n_hmac_state *state, void *out, uint32_
     return s2n_hash_digest(&state->inner, out, size);
 }
 
-
+// BEGIN S2N_TLS_HMAC_INIT
 static int s2n_tls_hmac_init(struct s2n_hmac_state *state, s2n_hmac_algorithm alg, const void *key, uint32_t klen)
 {
     s2n_hash_algorithm hash_alg;
@@ -168,6 +168,7 @@ static int s2n_tls_hmac_init(struct s2n_hmac_state *state, s2n_hmac_algorithm al
 
     return s2n_hmac_reset(state);
 }
+// END S2N_TLS_HMAC_INIT
 
 int s2n_hmac_xor_pad_size(s2n_hmac_algorithm hmac_alg, uint16_t *xor_pad_size)
 {
@@ -205,7 +206,6 @@ int s2n_hmac_hash_block_size(s2n_hmac_algorithm hmac_alg, uint16_t *block_size)
     return 0;
 }
 
-// BEGIN S2N_HMAC_NEW
 int s2n_hmac_new(struct s2n_hmac_state *state)
 {
     GUARD(s2n_hash_new(&state->inner));
@@ -215,7 +215,6 @@ int s2n_hmac_new(struct s2n_hmac_state *state)
 
     return 0;
 }
-// END S2N_HMAC_NEW
 
 int s2n_hmac_init(struct s2n_hmac_state *state, s2n_hmac_algorithm alg, const void *key, uint32_t klen)
 {

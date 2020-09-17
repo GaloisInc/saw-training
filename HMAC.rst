@@ -1,11 +1,11 @@
 Maintaining Proofs: s2n HMAC
 ============================
 
-As mentioned in :ref:`swap-code-evolution`, the evolution of a program is
-accompanied by the evolution of its specifications. The maintenance of a tight
-correspondence between a software system, its specifications, and the proofs
-that these specifications are satisfied can be accomplished fairly easily with
-SAW and Cryptol.
+As mentioned in :ref:`swap-code-evolution`, the evolution of a program
+is accompanied by the evolution of its specifications. A key part of
+using SAW and Cryptol to verify a software system is the ongoing
+maintenance of proof artifacts through the software development
+lifecycle.
 
 The tasks necessary to keep a program and the verifications performed on it
 consistent fall under the umbrella of *proof maintenance*. This section shows

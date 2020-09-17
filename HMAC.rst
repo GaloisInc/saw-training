@@ -23,8 +23,21 @@ follow along yourself in the provided ``examples/hmac`` directory.
 s2n HMAC Summary
 ----------------
 
-TODO: Give a brief overview of how the HMAC implementation is laid out,
-including reference implementations etc
+Given the size of the s2n HMAC implementation, it is impractical to go through
+all of it in detail. The most relevant files are listed below, with brief
+descriptions of their contents:
+
+TODO: Def list of files
+
+All other files are headers/modules these relevant files are dependent on and
+will not be discussed. The curious reader can explore them further by following
+the above link to the commit which inspired this tutorial.
+
+Take note of the suffixes ``_old`` and ``_new``: These make obvious what files
+needed to be changed as part of proof maintenance, and allow for one to easily
+study the changes made via tools like ``diff``. Taking the time to do this is
+encouraged in order to develop a more complete understanding of the maintenance
+task than the samples chosen for this written tutorial can offer.
 
 
 The Updates to the 'Real' Implementation

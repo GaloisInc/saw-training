@@ -11,16 +11,18 @@ lifecycle.
   single: proof; maintenance
   single: maintenance; proof
 
-The tasks necessary to keep a program and the verifications performed on it
-consistent fall under the umbrella of *proof maintenance*. This section describes a real-world example of proof maintenance, adapted from `these changes to the HMAC
-implementation underlying Amazon's s2n <https://github.com/awslabs/s2n/commit/e283d76f966828f27002dea7c7c0bd9865fea926>`_.
-The code has been modified slightly to better suit this tutorial.
+*Proof maintenance* is the process of preserving the correspondence between a program, its specification, and its
+proof of correctness as requirements change over time. This section describes a real-world example of proof
+ maintenance, adapted from `these changes to the HMAC implementation in Amazon's s2n <https://github.com/awslabs/s2n/commit/e283d76f966828f27002dea7c7c0bd9865fea926>`_.
+The code's file structure has been reorganized slightly, but the code itself is untouched.
+
 
 This task will be approached as if the changes to the 'real' implementation are
 given, and the goal will be to evolve the relevant specifications to
 match. Throughout, take note of the very direct correspondence between the
 changes to the code and the changes to the specifications - it will help to
 follow along yourself in the provided ``examples/hmac`` directory.
+
 
 
 s2n HMAC Summary

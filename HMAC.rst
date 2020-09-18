@@ -79,7 +79,7 @@ a new field to the ``s2n_hmac_state`` structure as it is defined in
   :emphasize-lines: 12
 
 The addition of this new field saw corresponding changes to the implementation
-code, which can be found in ``s2n_hmac_new.c``. These changes included memory
+code, which can be found in :download:`s2n_hmac_new.c </downloads/examples/hmac/s2n_hmac_new.c>`. These changes included memory
 allocations, initializations, updates, and frees. The following code sample
 gives a good sense of the types of changes involved:
 

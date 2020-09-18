@@ -6,7 +6,8 @@
 Program Verification with SAW
 =============================
 
-SAW, the Software Analysis Workbench, is a tool for program verification. This example-driven tutorial demonstrates how to use SAW for common tasks and how to integrate it into the software development lifecycle.
+SAW, the Software Analysis Workbench, is a tool for program verification. This example-driven tutorial demonstrates how to use SAW for common tasks and how to integrate it into the software development lifecycle. The tutorial makes use of several :download:`example files </examples.tar.gz>`.
+
 
 .. toctree::
    :maxdepth: 2

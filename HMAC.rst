@@ -17,7 +17,7 @@ proof of correctness as requirements change over time. This section describes a 
 The code's file structure has been reorganized slightly, but the code itself is untouched.
 
 
-This task will be approached as if the changes to the 'real' implementation are
+This task will be approached as if the changes to the "real" implementation are
 given, and the goal will be to evolve the relevant specifications to
 match. Throughout, take note of the very direct correspondence between the
 changes to the code and the changes to the specifications - it will help to
@@ -27,6 +27,20 @@ follow along yourself in the provided ``examples/hmac`` directory.
 
 s2n HMAC Summary
 ----------------
+
+.. DTC: Do we need this section at all, other than the sentence about
+   new and old and diff? Also, I think we can render HTML-ized diffs
+   and include them, though maybe not in this timeframe.
+
+.. DTC: Starting with a high-level overview of files runs the risk of
+   boring readers. This is not intended to be a reference work, it's a
+   tutorial.
+
+.. DTC: Style note: this section refers to "one" and "the reader", but
+   other parts say "you". We should be consistent in this respect. I
+   usually try to phrase things to avoid the need to talk about
+   whoever is reading it, and instead have the text just talk about
+   ideas/software/computers/etc.
 
 Given the size of the s2n HMAC implementation, it is impractical to go through
 all of it in detail. The most relevant files are listed below, with brief
@@ -45,7 +59,7 @@ encouraged in order to develop a more complete understanding of the maintenance
 task than the samples chosen for this written tutorial can offer.
 
 
-The Updates to the 'Real' Implementation
+The Updates to the "Real" Implementation
 ----------------------------------------
 
 This section provides an overview of the changes to the real implementation
@@ -80,6 +94,12 @@ Similar updates can be found throughout the code; you're encouraged to explore
 the diff between ``s2n_hmac_old.c`` and ``s2n_hmac_new.c`` to have a better
 understanding of all of the changes implemented.
 
+.. DTC: Instead of saying "one might guess... yay the guess was right!",
+   I'd just say "here's what we have to do", and also explicitly
+   relate it to the rotr3 bit at the end of Swap.rst
+
+.. DTC: First sentence of next para is run-on
+
 More interesting, though, is the fact that knowing these changes, it is
 possible to estimate reasonably what will need to change among reference
 implementations, specifications, and proof scripts verifying that these
@@ -100,15 +120,24 @@ HMAC must evolve to account for the code updates.
 Updating the Reference Implementation
 -------------------------------------
 
+.. DTC: I don't get the following bit:
+     Due to the close-to-the-math nature of Cryptol, this should be a small enough change that faith in the correctness of the reference is not lost.
+
+   First off, what does it mean to be "close to the math"? It makes
+   sense if we have a description of HMAC with the new state in a
+   paper somewhere, and this Cryptol code looks like it. But that
+   doesn't seem to be the case. And whose faith are we talking about?
+   What tools do we use to validate the updated specification?
+
 In order for verification to go through, the reference implementation (that is,
 the implementation we trust as correct) must be updated to reflect the
 existence of the new state field introduced above. Due to the close-to-the-math
 nature of Cryptol, this should be a small enough change that faith in the
 correctness of the reference is not lost.
 
-The Cryptol type corresponding to the updated state container must, like the C
-structure, be augmented with an ``outer_just_key`` field of appropriate type,
-like so:
+The Cryptol type corresponding to the updated state container must,
+like the C structure, be augmented with an ``outer_just_key`` field
+that has the appropriate type, like so:
 
 .. literalinclude:: examples/hmac/HMAC_iterative_new.cry
   :language: Cryptol
@@ -121,7 +150,9 @@ This very clearly corresponds to the change to the ``s2n_hmac_state`` structure
 described above, other than the specialization to a particular hashing
 algorithm.
 
-As above, here is a sample of how the functions making use of the
+.. DTC: What does specialization to a particular hashing algorithm mean?
+
+As above, here is a sample of how the functions that use the
 ``HMAC_c_state`` type must change:
 
 .. literalinclude:: examples/hmac/HMAC_iterative_new.cry
@@ -129,6 +160,9 @@ As above, here is a sample of how the functions making use of the
   :start-after: // BEGIN HMAC_INIT_C_STATE
   :end-before: // END HMAC_INIT_C_STATE
   :emphasize-lines: 24,40-42
+
+.. DTC: "you" warning. We should follow up on these, and perhaps
+   phrase them as explicit exercises rather than in-text advice.
 
 Take note of how similar these changes are to those in the analogous C code
 shown above; this is true more generally, and you are encouraged to explore
@@ -140,18 +174,19 @@ relate to those between ``s2n_hmac_old.c`` and ``s2n_hmac_new.c``.
 Updating the Specifications
 ---------------------------
 
-The final step to proof maintenance is updating the specifications. This task
-can range in difficulty from simply updating memory layouts to changing what
-the specification actually asserts about the program; in this example, the
-necessary changes are closer to the former rather than latter, since the
-implementation change was the straightforward addition of a data field.
+The final step to proof maintenance is updating the SAW portion of the
+specification. This can range in difficulty from simply updating
+memory layouts to changing what the specification actually asserts
+about the program. For the HMAC updates, the necessary changes are closer
+to the former rather than latter, since the implementation change was
+the addition of a data field.
 
 A reliable strategy for updating ``HMAC_old.saw`` to account for
 ``outer_just_key`` is a simple search for the names of other fields already
 present in the structure; these will likely appear where memory layouts and
 initializations that need to be augmented are specified.
 
-Indeed, such a search for the term 'outer' in ``HMAC_old.saw`` reveals not only
+Indeed, such a search for the term "outer" in ``HMAC_old.saw`` reveals not only
 where memory layouts are specified, but embedded Cryptol terms of the type
 adjusted in the previous section. One of the memory layout specifications
 found through this search looks like this:
@@ -163,10 +198,10 @@ found through this search looks like this:
   :end-before: // END HMAC_MEM_LAYOUT_OLD
   :emphasize-lines: 9
 
-Sharp-eyed readers may see that there is another improvement that can be made
-to this code: Use of the ``crucible_field`` primitive rather than
-``crucible_elem``, which allows reference to structure fields by name rather
-than by index. This, and the necessary change to memory layout appear below.
+Another improvement that can be made to this code is to use the
+``crucible_field`` primitive instead of ``crucible_elem``, which
+allows reference to structure fields by name rather than by
+index. This, and the necessary change to memory layout, appear below.
 
 .. literalinclude:: /examples/hmac/HMAC_new.saw
   :language: SAWScript
@@ -186,7 +221,7 @@ original code found by searching looks like this:
   :end-before: // END HMAC_CRYPTOL_OLD
   :emphasize-lines: 10
 
-And the update corresponds exactly to that done in the Cryptol reference
+And the update corresponds exactly to the one in the Cryptol reference
 implementation:
 
 .. literalinclude:: /examples/hmac/HMAC_new.saw
@@ -195,6 +230,9 @@ implementation:
  :start-after: // BEGIN HMAC_CRYPTOL_NEW
  :end-before: // END HMAC_CRYPTOL_NEW
  :emphasize-lines: 11
+
+.. DTC: We should really find a way to include a highlighted diff, so
+   that people actually read it
 
 With this (and the analogous changes not shown here for brevity), the
 specifications have been updated to account for the changes to the

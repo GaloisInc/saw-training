@@ -175,7 +175,7 @@ SAWScript function ``oneptr_update_func n ty f``, which takes ``n : String``
 naming the parameter for pretty-printing,  ``ty : LLVMType`` describing the
 parameter type, and ``f : Term`` to apply to the parameter:
 
-.. literalinclude:: examples/salsa20/salsa20.saw
+.. literalinclude:: examples/salsa20/salsa20_compositional.saw
   :language: Cryptol
   :start-after: // BEGIN ONEPTR_UPDATE
   :end-before: // END ONEPTR_UPDATE
@@ -186,7 +186,7 @@ functions the implementation of Salsa20 depends on.
 These functions are all dependent on ``s20_quarterround``, though, so that
 function also needs a specification:
 
-.. literalinclude:: examples/salsa20/salsa20.saw
+.. literalinclude:: examples/salsa20/salsa20_compositional.saw
   :language: Cryptol
   :start-after: // BEGIN QUARTERROUND
   :end-before: // END QUARTERROUND
@@ -200,7 +200,7 @@ pointers in the post-condition of the SAW specification.
 The specification for ``s20_hash`` is one for which ``oneptr_update_func`` is
 sufficient:
 
-.. literalinclude:: examples/salsa20/salsa20.saw
+.. literalinclude:: examples/salsa20/salsa20_compositional.saw
   :language: Cryptol
   :start-after: // BEGIN SALSA20
   :end-before: // END SALSA20
@@ -212,7 +212,7 @@ to specify a list of ``CrucibleMethodSpec`` which come from earlier
 verifications. Notice in the highlighted lines that the results of earlier
 verifications within ``main`` are passed along:
 
-.. literalinclude:: examples/salsa20/salsa20.saw
+.. literalinclude:: examples/salsa20/salsa20_compositional.saw
   :language: Cryptol
   :start-after: // BEGIN MAIN
   :end-before: // END MAIN
@@ -247,8 +247,8 @@ can operate on any input size, SAW can only operate on finite programs.
 Comparing Compositional and Non-compositional Verification
 ----------------------------------------------------------
 
-TODO: Measure times for compositional/non-compositional verification and
-display them here
+A natural question is, "what happens when you *don't* use compositional
+verification?"
 
 
 .. rubric:: Footnotes

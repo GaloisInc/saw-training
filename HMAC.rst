@@ -17,53 +17,18 @@ maintenance, adapted from `these changes to the HMAC implementation in Amazon's 
 The code's file structure has been reorganized slightly, but the code itself is untouched.
 
 
-This task will be approached as if the changes to the "real" implementation are
+This task will be approached as if the changes to the implementation are
 given, and the goal will be to evolve the relevant specifications to
 match. Throughout, take note of the very direct correspondence between the
 changes to the code and the changes to the specifications - it will help to
 follow along yourself in the provided ``examples/hmac`` directory.
 
 
+The Updates to the Implementation
+---------------------------------
 
-s2n HMAC Summary
-----------------
-
-.. DTC: Do we need this section at all, other than the sentence about
-   new and old and diff? Also, I think we can render HTML-ized diffs
-   and include them, though maybe not in this timeframe.
-
-.. DTC: Starting with a high-level overview of files runs the risk of
-   boring readers. This is not intended to be a reference work, it's a
-   tutorial.
-
-.. DTC: Style note: this section refers to "one" and "the reader", but
-   other parts say "you". We should be consistent in this respect. I
-   usually try to phrase things to avoid the need to talk about
-   whoever is reading it, and instead have the text just talk about
-   ideas/software/computers/etc.
-
-Given the size of the s2n HMAC implementation, it is impractical to go through
-all of it in detail. The most relevant files are listed below, with brief
-descriptions of their contents:
-
-TODO: Def list of files
-
-All other files are headers/modules these relevant files are dependent on and
-will not be discussed. The curious reader can explore them further by following
-the above link to the commit which inspired this tutorial.
-
-Take note of the suffixes ``_old`` and ``_new``: These make obvious what files
-needed to be changed as part of proof maintenance, and allow for one to easily
-study the changes made via tools like ``diff``. Taking the time to do this is
-encouraged in order to develop a more complete understanding of the maintenance
-task than the samples chosen for this written tutorial can offer.
-
-
-The Updates to the "Real" Implementation
-----------------------------------------
-
-This section provides an overview of the changes to the real implementation
-that demand some level of proof maintenance.
+This section provides an overview of the changes to the implementation that
+demand some level of proof maintenance.
 
 The s2n HMAC implementation needed to be updated to make use of an additional
 piece of hashing state, ``outer_just_key``, for the implementation of TLS.
@@ -90,21 +55,17 @@ gives a good sense of the types of changes involved:
   :end-before: // END S2N_TLS_HMAC_INIT
   :emphasize-lines: 9,36-37
 
-Similar updates can be found throughout the code; you're encouraged to explore
-the diff between ``s2n_hmac_old.c`` and ``s2n_hmac_new.c`` to have a better
-understanding of all of the changes implemented.
+The complete diff between ``s2n_hmac_old.c`` and ``s2n_hmac_new.c`` shows a
+number of updates similar to that above:
 
-.. DTC: Instead of saying "one might guess... yay the guess was right!",
-   I'd just say "here's what we have to do", and also explicitly
-   relate it to the rotr3 bit at the end of Swap.rst
+.. literalinclude:: examples/hmac/s2n_hmac_new.c
+    :language: C
+    :caption: Changes to the s2n HMAC implementation
+    :diff: examples/hmac/s2n_hmac_old.c
 
-.. DTC: First sentence of next para is run-on
-
-More interesting, though, is the fact that knowing these changes, it is
-possible to estimate reasonably what will need to change among reference
-implementations, specifications, and proof scripts verifying that these
-specifications are met. In this case, one might guess that it will be
-necessary to complete the following tasks as proof maintenance:
+From these changes alone, the work needed to keep the proofs up-to-date with
+the implementation can be very reasonably estimated. In this case, it will be
+necessary to complete the following tasks:
 
 * Add the new field to the correct type(s) in the Cryptol reference
   implementation
@@ -113,27 +74,17 @@ necessary to complete the following tasks as proof maintenance:
 * Update the SAWScript to reflect new memory layouts, initializations, etc
   implied by the updated type
 
-Indeed, these expected next steps are precisely how the verification of s2n
-HMAC must evolve to account for the code updates.
+Take note of the similarities to the ``rotr3`` example in
+:ref:`swap-code-evolution`; these types of update are ubiquitous when working
+on proof maintenance tasks.
 
 
-Updating the Reference Implementation
--------------------------------------
+Updating the Cryptol Specification
+----------------------------------
 
-.. DTC: I don't get the following bit:
-     Due to the close-to-the-math nature of Cryptol, this should be a small enough change that faith in the correctness of the reference is not lost.
-
-   First off, what does it mean to be "close to the math"? It makes
-   sense if we have a description of HMAC with the new state in a
-   paper somewhere, and this Cryptol code looks like it. But that
-   doesn't seem to be the case. And whose faith are we talking about?
-   What tools do we use to validate the updated specification?
-
-In order for verification to go through, the reference implementation (that is,
+In order for verification to go through, the Cryptol specification (that is,
 the implementation we trust as correct) must be updated to reflect the
-existence of the new state field introduced above. Due to the close-to-the-math
-nature of Cryptol, this should be a small enough change that faith in the
-correctness of the reference is not lost.
+existence of the new state field introduced above.
 
 The Cryptol type corresponding to the updated state container must,
 like the C structure, be augmented with an ``outer_just_key`` field
@@ -147,10 +98,8 @@ that has the appropriate type, like so:
   :emphasize-lines: 10
 
 This very clearly corresponds to the change to the ``s2n_hmac_state`` structure
-described above, other than the specialization to a particular hashing
-algorithm.
-
-.. DTC: What does specialization to a particular hashing algorithm mean?
+described above, other than the specialization to SHA512 (the C implementation
+is abstracted over the chosen hashing algorithm.)
 
 As above, here is a sample of how the functions that use the
 ``HMAC_c_state`` type must change:
@@ -161,18 +110,18 @@ As above, here is a sample of how the functions that use the
   :end-before: // END HMAC_INIT_C_STATE
   :emphasize-lines: 24,40-42
 
-.. DTC: "you" warning. We should follow up on these, and perhaps
-   phrase them as explicit exercises rather than in-text advice.
-
 Take note of how similar these changes are to those in the analogous C code
-shown above; this is true more generally, and you are encouraged to explore
-this further in the diff between ``HMAC_iterative_old.cry`` and
-``HMAC_iterative_new.cry``, paying special attention to how these updates
-relate to those between ``s2n_hmac_old.c`` and ``s2n_hmac_new.c``.
+shown above; this is true more generally, as can be seen in the complete
+diff between ``HMAC_iterative_old.cry`` and ``HMAC_iterative_new.cry``:
+
+.. literalinclude:: examples/hmac/HMAC_iterative_new.cry
+  :language: Cryptol
+  :caption: Changes to the HMAC Cryptol specification
+  :diff: examples/hmac/HMAC_iterative_old.cry
 
 
-Updating the Specifications
----------------------------
+Updating the SAW Specifications
+-------------------------------
 
 The final step to proof maintenance is updating the SAW portion of the
 specification. This can range in difficulty from simply updating
@@ -231,11 +180,13 @@ implementation:
  :end-before: // END HMAC_CRYPTOL_NEW
  :emphasize-lines: 11
 
-.. DTC: We should really find a way to include a highlighted diff, so
-   that people actually read it
+The complete set of changes to the SAW specification can be seen in the diff
+between ``HMAC_old.saw`` and ``HMAC_new.saw``:
 
-With this (and the analogous changes not shown here for brevity), the
-specifications have been updated to account for the changes to the
-implementation. As before, you are encouraged to look at the diff between
-``HMAC_old.saw`` and ``HMAC_new.saw`` to develop a more complete understanding
-of this example and what proof maintenance looks like more generally.
+.. literalinclude:: /examples/hmac/HMAC_new.saw
+  :language: SAWScript
+  :caption: Changes to the HMAC SAW specification
+  :diff: /examples/hmac/HMAC_old.saw
+
+With this, the specifications have been updated to account for the changes to
+the implementation, and verification via SAW will go through as intended.

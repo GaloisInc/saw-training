@@ -3,6 +3,9 @@ Glossary
 
 .. glossary::
 
+  compositional verification
+    
+
   Cryptol
     A specification language for algorithms. Used as the notation for :term:`SAWCore` in :term:`SAWScript`.
 

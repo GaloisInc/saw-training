@@ -1,19 +1,20 @@
 Compositional Verification and Salsa20
 ======================================
 
-Most software systems are (pardon the pun) composed of more than a handful of
-small functions, and verifying that such systems satisfy a specification
-can quickly become unwieldy, as a given function's correctness likely depends
-on the correctness of many other functions.
+.. index:: compositional verification
 
-:ref:`swap-example` shows what verification/maintenance for a small standalone
-function looks like in practice; this section builds on that work to show how
-*compositional verification* can be used to combine the verifications of such
-functions and dramatically improve the performance of a verification task.
+:ref:`swap-example` demonstrates verification and maintenance for a
+small standalone function. Most interesting programs are not just
+single functions, however. Good software engineering practice entails
+splitting programs into smaller functions, each of which can be
+understood and tested independently. Compositional verification in SAW
+allows this structure to be reflected in proofs as well, so that each
+function can be verified independently. This can greatly increase the
+performance of a verification script.
 
-The task at hand is the verification of an implementation of the Salsa20
-encryption algorithm. Complete example code can be found in
-``examples/salsa20``.
+This section describes the verification of an implementation of the
+Salsa20 encryption algorithm. Complete example code can be found in
+the ``examples/salsa20`` of :download:`the example code </examples.tar.gz>`.
 
 
 Salsa20 Verification Overview
@@ -22,7 +23,7 @@ Salsa20 Verification Overview
 Salsa20 is a stream cipher developed in 2005 by Daniel J. Bernstein, built on a
 pseudorandom function utilizing add-rotate-XOR (ARX) operations on 32-bit words
 [#salsa20wiki]_. His original specification can be found
-`here <http://cr.yp.to/snuffle/spec.pdf>`_, for the mathematically inclined.
+`here <http://cr.yp.to/snuffle/spec.pdf>`_.
 
 The specification for this task is a trusted implementation written in
 :term:`Cryptol`. This is analogous to what is covered in :ref:`swap-cryptol` in

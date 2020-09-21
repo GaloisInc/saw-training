@@ -16,10 +16,31 @@ encryption algorithm. Complete example code can be found in
 ``examples/salsa20``.
 
 
-Salsa20
--------
+Salsa20 Verification Overview
+-----------------------------
 
-TODO: Describe Salsa20 at a high-level
+Salsa20 is a stream cipher developed in 2005 by Daniel J. Bernstein, built on a
+pseudorandom function utilizing add-rotate-XOR (ARX) operations on 32-bit words
+[#salsa20wiki]_. His original specification can be found
+`here <http://cr.yp.to/snuffle/spec.pdf>`_, for the mathematically inclined.
+
+The specification for this task is a trusted implementation written in
+:term:`Cryptol`. This is analogous to what is covered in :ref:`swap-cryptol` in
+the ``swap`` example, but for a larger system. Some exemplars from this
+specification are explored below for the sake of showing what large-scale
+Cryptol programs look like.
+
+The implementation to be verified is written in C to closely match the Cryptol
+specification. In practice, this implementation would likely make use of tricks
+akin to the XOR-based swap explored in :ref:`swap-example`, but for tutorial
+purposes, such optimizations are not so important. This implementation is
+covered in part after the exploration of the Cryptol specification.
+
+A SAWScript containing the specifications of memory layouts and orchestration
+of the verification itself ties everything together. This will be covered last,
+including some performance comparisons between compositional and
+non-compositional verification.
+
 
 A Cryptol Reference Implementation
 ----------------------------------
@@ -200,3 +221,7 @@ TODO: Walk through the SAWScript specs/verifications
   :language: Cryptol
   :start-after: // BEGIN MAIN
   :end-before: // END MAIN
+
+.. rubric:: Footnotes
+
+.. [#salsa20wiki] https://en.wikipedia.org/wiki/Salsa20

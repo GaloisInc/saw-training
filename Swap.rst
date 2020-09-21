@@ -340,6 +340,8 @@ The final specification is much shorter:
   :end-before: // END SWAP_SPEC
 
 
+.. _swap-cryptol:
+
 Cryptol
 -------
 

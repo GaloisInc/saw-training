@@ -1,3 +1,5 @@
+.. _swap-example:
+
 First Example: Swapping Two Numbers
 ===================================
 

@@ -1,22 +1,20 @@
 Compositional Verification and Salsa20
 ======================================
 
-This is another complete verification example, focusing on the use of
-*compositional verification* for more complex software systems. In particular,
-we verify the Salsa20 encryption algorithm, which reflects what a complete
-verification task may look like in practice.
+Most software systems are (pardon the pun) composed of more than a handful of
+small functions, and verifying that such systems satisfy a specification
+can quickly become unwieldy, as a given function's correctness likely depends
+on the correctness of many other functions.
 
-Key concepts:
+:ref:`swap-example` shows what verification/maintenance for a small standalone
+function looks like in practice; this section builds on that work to show how
+*compositional verification* can be used to combine the verifications of such
+functions and dramatically improve the performance of a verification task.
 
-* Compositional verification
+The task at hand is the verification of an implementation of the Salsa20
+encryption algorithm. Complete example code can be found in
+``examples/salsa20``.
 
-  - Specification-based approaches to verification allow for compositional
-    reasoning: We only need to prove any particular result once, and can then
-    use it freely in future proofs
-  - Very large/complex systems that are otherwise too unwieldy to verify can be
-    reasoned about using this technique
-
-* Cryptol practice
 
 Salsa20
 -------

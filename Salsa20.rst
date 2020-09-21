@@ -114,65 +114,50 @@ following diagram:
 
 TODO: Insert boxes/arrows showing data flow for Salsa20
 
-A C Implementation to Verify
-----------------------------
+The C Implementation to Verify
+------------------------------
 
-TODO: Walk through the C implementation of Salsa20
+As stated above, the C implementation is very similar to its specification, the
+most obvious difference being heavy use of in-place mutation and the encryption
+function itself being restricted to 32-bit keys. For this reason, only a
+couple of the functions are explicated in detail (and it is these functions
+whose SAWScript specifications will be studied later).
 
-.. literalinclude:: examples/salsa20/salsa20.c
-  :language: C
-  :start-after: // BEGIN ROTL
-  :end-before: // END ROTL
+The ``s20_quarterround`` shows the most important deviations from the
+specification code, namely the use of in-place mutation rather than the
+functional paradigm of Cryptol:
 
 .. literalinclude:: examples/salsa20/salsa20.c
   :language: C
   :start-after: // BEGIN QUARTERROUND
   :end-before: // END QUARTERROUND
 
-.. literalinclude:: examples/salsa20/salsa20.c
-  :language: C
-  :start-after: // BEGIN ROWROUND
-  :end-before: // END ROWROUND
+This function directly modifies the targets of its argument pointers, which
+should be contrasted with the building/returning of a new sequence in Cryptol.
+This paradigm shift will be visible in the SAWScript specification, as that is
+where the memory management of the C is connected to the pure computation of
+the Cryptol.
 
-.. literalinclude:: examples/salsa20/salsa20.c
-  :language: C
-  :start-after: // BEGIN COLUMNROUND
-  :end-before: // END COLUMNROUND
-
-.. literalinclude:: examples/salsa20/salsa20.c
-  :language: C
-  :start-after: // BEGIN DOUBLEROUND
-  :end-before: // END DOUBLEROUND
-
-.. literalinclude:: examples/salsa20/salsa20.c
-  :language: C
-  :start-after: // BEGIN LITTLEENDIAN
-  :end-before: // END LITTLEENDIAN
-
-.. literalinclude:: examples/salsa20/salsa20.c
-  :language: C
-  :start-after: // BEGIN LITTLEENDIAN_INVERSE
-  :end-before: // END LITTLEENDIAN_INVERSE
+The other function of note is the Salsa20 hash. The function ``s20_hash``
+explicitly performs the iterations of the lower-level functions, in contrast to
+the use of sequence comprehensions and laziness in the Cryptol implementation.
+Arguably, this code is clearer than the correspondent Cryptol, but this is
+certainly more of a matter of taste than anything:
 
 .. literalinclude:: examples/salsa20/salsa20.c
   :language: C
   :start-after: // BEGIN SALSA20
   :end-before: // END SALSA20
 
-.. literalinclude:: examples/salsa20/salsa20.c
-  :language: C
-  :start-after: // BEGIN SALSA20_EXPANSION16
-  :end-before: // END SALSA20_EXPANSION16
+Again note the pervasive use of in-place mutation: As with ``s20_quarterround``
+and the other functions necessary to implement Salsa20, this will be connected
+to the pure computations in the Cryptol specification via the SAWScript
+specification which details memory layouts.
 
-.. literalinclude:: examples/salsa20/salsa20.c
-  :language: C
-  :start-after: // BEGIN SALSA20_EXPANSION32
-  :end-before: // END SALSA20_EXPANSION32
+A diagrammatic view of the C implementation is less informative than that for
+Cryptol due in large part to the pervasive use of in-place mutation, so none is
+provided here.
 
-.. literalinclude:: examples/salsa20/salsa20.c
-  :language: C
-  :start-after: // BEGIN SALSA20_ENCRYPT
-  :end-before: // END SALSA20_ENCRYPT
 
 Specification and Verification
 ------------------------------

@@ -21,7 +21,7 @@ This task will be approached as if the changes to the implementation are
 given, and the goal will be to evolve the relevant specifications to
 match. Throughout, take note of the very direct correspondence between the
 changes to the code and the changes to the specifications - it will help to
-follow along yourself in the provided ``examples/hmac`` directory.
+follow along in the provided ``examples/hmac`` directory.
 
 
 The Updates to the Implementation

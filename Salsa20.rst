@@ -42,55 +42,77 @@ including some performance comparisons between compositional and
 non-compositional verification.
 
 
-A Cryptol Reference Implementation
-----------------------------------
+A Cryptol Specification
+-----------------------
 
-TODO: Walk through the Cryptol implementation of Salsa20
+The Cryptol specification in ``examples/salsa20/salsa20.cry`` implements
+directly the functions defined in Bernstein's paper linked above. Because there
+is so much code, this section will only go through some of the functions in
+detail, in order to highlight some features of Cryptol.
+
+The first function defined is ``quarterround : [4][32] -> [4][32]``: It takes
+a sequence of 4 32-bit words and performs the operation defined in Bernstein's
+specification; note that the Cryptol code resembles the mathematics very
+closely, including the use of the Cryptol operator ``<<<`` which performs a
+left rotation on a sequence:
 
 .. literalinclude:: examples/salsa20/Salsa20.cry
   :language: Cryptol
   :start-after: // BEGIN QUARTERROUND
   :end-before: // END QUARTERROUND
 
-.. literalinclude:: examples/salsa20/Salsa20.cry
-  :language: Cryptol
-  :start-after: // BEGIN ROWROUND
-  :end-before: // END ROWROUND
+``quarterround`` is used in the definition of two other functions, ``rowround``
+and ``columnround``, which perform the operation on the rows and columns of a
+particular matrix, represented as a flat sequence of 16 32-bit words.
 
-.. literalinclude:: examples/salsa20/Salsa20.cry
-  :language: Cryptol
-  :start-after: // BEGIN COLUMNROUND
-  :end-before: // END COLUMNROUND
+These two operations are composed (``rowround`` after ``columnround``) to form
+the ``doubleround`` operation. The Cryptol code for this composition is exactly
+as that which appears in Bernstein's specification document:
 
 .. literalinclude:: examples/salsa20/Salsa20.cry
   :language: Cryptol
   :start-after: // BEGIN DOUBLEROUND
   :end-before: // END DOUBLEROUND
 
-.. literalinclude:: examples/salsa20/Salsa20.cry
-  :language: Cryptol
-  :start-after: // BEGIN LITTLEENDIAN
-  :end-before: // END LITTLEENDIAN
-
-.. literalinclude:: examples/salsa20/Salsa20.cry
-  :language: Cryptol
-  :start-after: // BEGIN LITTLEENDIAN_INVERSE
-  :end-before: // END LITTLEENDIAN_INVERSE
+Combined with some utility functions for mapping sequences of four bytes to and
+from little-endian 32-bit words, ``doubleround`` gives us the Salsa20 hash
+function:
 
 .. literalinclude:: examples/salsa20/Salsa20.cry
   :language: Cryptol
   :start-after: // BEGIN SALSA20
   :end-before: // END SALSA20
 
+This particular function is notable for its use of *laziness*: The definition
+of the variable ``zs`` in the ``where`` clause is given as a sequence
+comprehension referring to ``zs`` itself; this results in an infinite sequence
+which will only be evaluated *as needed*. More information about lazy
+evaluation can be found `in this excellent Medium article <https://medium.com/background-thread/what-is-lazy-evaluation-programming-word-of-the-day-8a6f4410053f>`_.
+
+The next function, ``Salsa20_expansion``, demonstrates a unique feature of
+Cryptol's type system: Arithmetic predicates. Part of the type is
+``{a} (a >= 1, 2 >= a) => ...``, which says that ``a`` is a type variable
+which can only take numeric values 1 and 2. This allwed this function to be
+written to be polymorphic over the allowed key sizes, namely 16- and 32-bit.
+Note the behavior in the definition that is conditioned on the value of ``a``:
+
 .. literalinclude:: examples/salsa20/Salsa20.cry
   :language: Cryptol
   :start-after: // BEGIN SALSA20_EXPANSION
   :end-before: // END SALSA20_EXPANSION
 
+The key expansion function finally allows for the encryption function to be
+implemented. Note the further use of arithmetic predicates and laziness:
+
 .. literalinclude:: examples/salsa20/Salsa20.cry
   :language: Cryptol
   :start-after: // BEGIN SALSA20_ENCRYPT
   :end-before: // END SALSA20_ENCRYPT
+
+The complete implementation can be visualized at a high-level using the
+following diagram:
+
+TODO: Insert boxes/arrows showing data flow for Salsa20
 
 A C Implementation to Verify
 ----------------------------

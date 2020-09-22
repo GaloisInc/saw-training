@@ -4,7 +4,7 @@ Glossary
 .. glossary::
 
   compositional verification
-    
+    A verification technique based on the idea that, when proving properties of a given method or function, we can make use of properties we have already proved about its callees.
 
   Cryptol
     A specification language for algorithms. Used as the notation for :term:`SAWCore` in :term:`SAWScript`.

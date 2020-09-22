@@ -1,19 +1,20 @@
 Compositional Verification and Salsa20
 ======================================
 
-Most software systems are (pardon the pun) composed of more than a handful of
-small functions, and verifying that such systems satisfy a specification
-can quickly become unwieldy, as a given function's correctness likely depends
-on the correctness of many other functions.
+.. index:: compositional verification
 
-:ref:`swap-example` shows what verification/maintenance for a small standalone
-function looks like in practice; this section builds on that work to show how
-*compositional verification* can be used to combine the verifications of such
-functions and dramatically improve the performance of a verification task.
+:ref:`swap-example` demonstrates verification and maintenance for a
+small standalone function. Most interesting programs are not just
+single functions, however. Good software engineering practice entails
+splitting programs into smaller functions, each of which can be
+understood and tested independently. Compositional verification in SAW
+allows this structure to be reflected in proofs as well, so that each
+function can be verified independently. This can greatly increase the
+performance of a verification script.
 
-The task at hand is the verification of an implementation of the Salsa20
-encryption algorithm. Complete example code can be found in
-``examples/salsa20``.
+This section describes the verification of an implementation of the
+Salsa20 encryption algorithm. Complete example code can be found in
+the ``examples/salsa20`` of :download:`the example code </examples.tar.gz>`.
 
 
 Salsa20 Verification Overview
@@ -22,13 +23,17 @@ Salsa20 Verification Overview
 Salsa20 is a stream cipher developed in 2005 by Daniel J. Bernstein, built on a
 pseudorandom function utilizing add-rotate-XOR (ARX) operations on 32-bit words
 [#salsa20wiki]_. His original specification can be found
-`here <http://cr.yp.to/snuffle/spec.pdf>`_, for the mathematically inclined.
+`here <http://cr.yp.to/snuffle/spec.pdf>`_.
 
 The specification for this task is a trusted implementation written in
 :term:`Cryptol`. This is analogous to what is covered in :ref:`swap-cryptol` in
-the ``swap`` example, but for a larger system. Some exemplars from this
+the ``swap`` example, but for a larger system. Some examples from this
 specification are explored below for the sake of showing what large-scale
 Cryptol programs look like.
+
+.. DTC: Is it actually true that there should be extra hacks/optimizations? From where do we know that?
+
+.. DTC: The xor-swap is not actually a thing that makes programs faster or better - these days it's a historical curiosity
 
 The implementation to be verified is written in C to closely match the Cryptol
 specification. In practice, this implementation would likely make use of tricks
@@ -45,21 +50,38 @@ non-compositional verification.
 A Cryptol Specification
 -----------------------
 
-The Cryptol specification in ``examples/salsa20/salsa20.cry`` implements
-directly the functions defined in Bernstein's paper linked above. Because there
-is so much code, this section will only go through some of the functions in
-detail, in order to highlight some features of Cryptol.
+The Cryptol specification in ``examples/salsa20/salsa20.cry`` directly
+implements the functions defined in Bernstein's
+`specification`_. Because there is so much code, this section will
+only go through some of the functions in detail, in order to highlight
+some features of Cryptol.
 
-The first function defined is ``quarterround : [4][32] -> [4][32]``: It takes
-a sequence of 4 32-bit words and performs the operation defined in Bernstein's
-specification; note that the Cryptol code resembles the mathematics very
-closely, including the use of the Cryptol operator ``<<<`` which performs a
-left rotation on a sequence:
+.. _specification: http://cr.yp.to/snuffle/spec.pdf
+
+The first example function is ``quarterround``. Its type is ``[4][32]
+-> [4][32]``, which means that it is a function that maps sequences of
+four 32-bit words into sequences of four 32-bit words. The ``[y0, y1,
+y2, y3]`` notation is pattern matching that pulls apart the four
+elements of the input sequence, naming each 32-bit word. The Cryptol
+operator ``<<<`` performs a left rotation on a sequence.
 
 .. literalinclude:: examples/salsa20/Salsa20.cry
   :language: Cryptol
   :start-after: // BEGIN QUARTERROUND
   :end-before: // END QUARTERROUND
+
+This Cryptol code closely resembles the definition in Section 3 of the
+specification. This The definition reads:
+
+If :math:`y = (y_0, y_1, y_2, y_3)` then :math:`\mathrm{quarterround(y) = (z_0, z_1, z_2, z_3)}` where
+
+.. math::
+  \begin{array}{rcl}
+  z_1 & = & y_1 \oplus{} ((y_0 + y_3) <\!\!<\!\!< 7)\\
+  z_2 & = & y_2 \oplus{} ((z_1 + y_0) <\!\!<\!\!< 9)\\
+  z_3 & = & y_3 \oplus{} ((z_2 + z_1) <\!\!<\!\!< 13)\\
+  z_0 & = & y_0 \oplus{} ((z_3 + z_2) <\!\!<\!\!< 18)\\
+  \end{array}
 
 ``quarterround`` is used in the definition of two other functions, ``rowround``
 and ``columnround``, which perform the operation on the rows and columns of a

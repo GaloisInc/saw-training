@@ -137,7 +137,7 @@ The next function, ``Salsa20_expansion``, demonstrates a unique feature of
 Cryptol's type system: Arithmetic predicates. Part of the type is
 ``{a} (a >= 1, 2 >= a) => ...``, which says that ``a`` is a type variable
 which can only take numeric values 1 and 2. This allowed this function to be
-written to be polymorphic over the allowed key sizes, namely 16- and 32-bit.
+written to be polymorphic over the allowed key sizes, namely 16- and 32-byte.
 Note the behavior in the definition that is conditioned on the value of ``a``:
 
 .. literalinclude:: examples/salsa20/Salsa20.cry
@@ -228,7 +228,7 @@ compositional verification are:
 
 1. The use of the path-satisfiability parameter to verify functions containing
    loops that aren't 'obviously' bounded (i.e. bounded by a constant)
-2. The lack of verification of the 16-bit version of Salsa20
+2. The lack of verification of the 16-byte key version of Salsa20
 3. The necessity of verifying the encryption for particular message sizes
 
 To 1: The details of path-satisfiability are beyond the scope of this tutorial,
@@ -236,7 +236,7 @@ but in essence, this must be turned on when code contains loops that are
 bounded, but not by a constant. SAW does not yet fully support verification of
 code containing potentially unbounded loops.
 
-To 2: The C implementation being verified does not provide the 16-bit version
+To 2: The C implementation being verified does not provide the 16-byte version
 of the encryption algorithm itself, hence it's missing from the SAW code.
 
 To 3: This is related to 1, in that it is an inherent limitation of SAW that

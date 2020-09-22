@@ -153,11 +153,6 @@ implemented. Note the further use of arithmetic predicates and laziness:
   :start-after: // BEGIN SALSA20_ENCRYPT
   :end-before: // END SALSA20_ENCRYPT
 
-The complete implementation can be visualized at a high-level using the
-following diagram:
-
-TODO: Insert boxes/arrows showing data flow for Salsa20
-
 
 SAW Specification and Verification
 ----------------------------------

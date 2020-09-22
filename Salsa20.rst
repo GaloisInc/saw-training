@@ -87,9 +87,9 @@ If :math:`y = (y_0, y_1, y_2, y_3)` then :math:`\mathrm{quarterround(y) = (z_0, 
 and ``columnround``, which perform the operation on the rows and columns of a
 particular matrix, represented as a flat sequence of 16 32-bit words.
 
-These two operations are composed (``rowround`` after ``columnround``) to form
-the ``doubleround`` operation. The Cryptol code for this composition is exactly
-as that which appears in Bernstein's specification document:
+These two operations are composed (``rowround`` after ``columnround``)
+to form the ``doubleround`` operation. The Cryptol code for this
+composition closely resembles the definition in the specification:
 
 .. literalinclude:: examples/salsa20/Salsa20.cry
   :language: Cryptol
@@ -105,16 +105,73 @@ function:
   :start-after: // BEGIN SALSA20
   :end-before: // END SALSA20
 
-This particular function is notable for its use of *laziness*: The definition
-of the variable ``zs`` in the ``where`` clause is given as a sequence
-comprehension referring to ``zs`` itself; this results in an infinite sequence
-which will only be evaluated *as needed*. More information about lazy
-evaluation can be found `in this excellent Medium article <https://medium.com/background-thread/what-is-lazy-evaluation-programming-word-of-the-day-8a6f4410053f>`_.
+.. index:: sequence comprehension
+
+All three definitions in the ``where`` clause are *sequence
+comprehensions*, which are similar to Python's generator expressions
+or C#'s LINQ.  A sequence comprehension consists of square brackets
+that contain an expression, and then one or more branches. Branches
+begin with a vertical bar, and they contain one or more
+comma-separated bindings. Each binding is a name, an arrow, and
+another sequence.
+
+.. DTC TODO some kind of REPL-looking thing for these examples - the text looks busy
+
+The value of a comprehension with one branch is found by evaluating
+the expression for each element of the sequence in the branch, with
+the name to the left of the arrow set to the current element. The
+value of ``[x + 1 | x <- [1,2,3]]`` is ``[2, 3, 4]``. If there are
+multiple bindings in the branch, later bindings are repeated for each
+earlier value. So the value of ``[(x + 1, y - 1) | x <- [1,2], y <-
+[11, 12]]`` is ``[(2, 10), (2, 11), (3, 10), (3, 11)]``. The value of
+a comprehension with multiple branches is found by evaluating each
+branch in parallel. The value of ``[(x + 1, y - 1) | x <- [1,2] | y <-
+[11,12]]`` is ``[(2, 10), (3, 11)]``.
+
+In the ``where`` clause, the definition of ``xw`` can be read as
+"First split ``xs`` into 4-byte words, then combine them in a
+little-endian manner to obtain 32-bit words." The specific sizes are
+automatically found by Cryptol's type checker.
+
+The definition of ``zs`` is an infinite sequence. It begins with
+``xw``, the little-endian reorganization of ``xs`` from the previous
+paragraph. The ``#`` operator appends sequences. The rest of the
+sequence consists of ``doubleround`` applied to each element of ``zs``
+itself. In other words, the second element is found by applying
+``doubleround`` to ``xw``, the third by applying ``doubleround`` to
+the second, and so forth. Stepping through the evaluation yields this
+sequence::
+
+    [xw] # [ doubleround zi | zi <- zs ]
+
+    [xw] # [ doubleround zi | zi <- [xw] # [doubleround zi | zi <- zs] ]
+
+    [xw] # [doubleround xw] # [ doubleround zi | zi <- [doubleround zi | zi <- zs] ]
+
+    [xw] # [doubleround xw] # [ doubleround zi | zi <- [doubleround zi | zi <- [xw] # [doubleround zi | zi <- zs]] ]
+
+    [xw] # [doubleround xw] # [ doubleround zi | zi <- [doubleround xw] # [doubleround zi | zi <- [doubleround zi | zi <- zs]] ]
+
+    [xw] # [doubleround xw] # [doubleround (doubleround xw)] # [ doubleround zi | zi <- [doubleround zi | zi <- [doubleround zi | zi <- zs]] ]
+
+The resulting sequence consists of ``doubleround`` applied :math:`n`
+times to ``xw`` at position :math:`n`. This process could, in
+principle, continue forever. In Cryptol, however, sequences are
+computed lazily, so as long as nothing ever asks for the last element,
+the program will still terminate.
+
+The final definition is ``ar``, which adds ``xw`` to the tenth element
+of ``zs``, which is the result of applying ``doubleround`` ten times
+to ``xw``. The final result of ``Salsa20`` is computed by re-joining
+the split words into the appropriate-sized sequence.
+
+.. DTC: Do we want to link to Medium, given their shady practices? If so, we should at least credit the author rather than the blog hoster. `in this excellent Medium article <https://medium.com/background-thread/what-is-lazy-evaluation-programming-word-of-the-day-8a6f4410053f>`_.
+
 
 The next function, ``Salsa20_expansion``, demonstrates a unique feature of
 Cryptol's type system: Arithmetic predicates. Part of the type is
 ``{a} (a >= 1, 2 >= a) => ...``, which says that ``a`` is a type variable
-which can only take numeric values 1 and 2. This allwed this function to be
+which can only take numeric values 1 and 2. This allowed this function to be
 written to be polymorphic over the allowed key sizes, namely 16- and 32-bit.
 Note the behavior in the definition that is conditioned on the value of ``a``:
 

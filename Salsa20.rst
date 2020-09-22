@@ -31,15 +31,9 @@ the ``swap`` example, but for a larger system. Some examples from this
 specification are explored below for the sake of showing what large-scale
 Cryptol programs look like.
 
-.. DTC: Is it actually true that there should be extra hacks/optimizations? From where do we know that?
-
-.. DTC: The xor-swap is not actually a thing that makes programs faster or better - these days it's a historical curiosity
-
 The implementation to be verified is written in C to closely match the Cryptol
-specification. In practice, this implementation would likely make use of tricks
-akin to the XOR-based swap explored in :ref:`swap-example`, but for tutorial
-purposes, such optimizations are not so important. This implementation is
-covered in part after the exploration of the Cryptol specification.
+specification. This implementation is shown in part alongside the specification
+for comparison purposes.
 
 A SAWScript containing the specifications of memory layouts and orchestration
 of the verification itself ties everything together. This will be covered last,
@@ -71,7 +65,7 @@ operator ``<<<`` performs a left rotation on a sequence.
   :end-before: // END QUARTERROUND
 
 This Cryptol code closely resembles the definition in Section 3 of the
-specification. This The definition reads:
+specification. The definition reads:
 
 If :math:`y = (y_0, y_1, y_2, y_3)` then :math:`\mathrm{quarterround(y) = (z_0, z_1, z_2, z_3)}` where
 
@@ -82,6 +76,20 @@ If :math:`y = (y_0, y_1, y_2, y_3)` then :math:`\mathrm{quarterround(y) = (z_0, 
   z_3 & = & y_3 \oplus{} ((z_2 + z_1) <\!\!<\!\!< 13)\\
   z_0 & = & y_0 \oplus{} ((z_3 + z_2) <\!\!<\!\!< 18)\\
   \end{array}
+
+Contrast this with the C implementation of ``s20_quarterround``, which makes
+heavy use of in-place mutation rather than the functional paradigm of building
+and returning a new sequence:
+
+.. literalinclude:: examples/salsa20/salsa20.c
+  :language: C
+  :start-after: // BEGIN QUARTERROUND
+  :end-before: // END QUARTERROUND
+
+This function directly modifies the targets of its argument pointers, a shift
+in paradigm that will be highlighted by the SAW specification since that is
+where the memory management of the C is connected to the pure computation of
+the Cryptol.
 
 ``quarterround`` is used in the definition of two other functions, ``rowround``
 and ``columnround``, which perform the operation on the rows and columns of a
@@ -111,10 +119,24 @@ comprehension referring to ``zs`` itself; this results in an infinite sequence
 which will only be evaluated *as needed*. More information about lazy
 evaluation can be found `in this excellent Medium article <https://medium.com/background-thread/what-is-lazy-evaluation-programming-word-of-the-day-8a6f4410053f>`_.
 
+Compare this to the C implementation, which explicitly performs the iterations
+of lower-level functions as described in Bernstein's specification. Arguably,
+this code is clearer than the correspondent Cryptol, but this is certainly more
+of a matter of taste than anything:
+
+.. literalinclude:: examples/salsa20/salsa20.c
+  :language: C
+  :start-after: // BEGIN SALSA20
+  :end-before: // END SALSA20
+
+Note again the pervasive use of in-place mutation - as with
+``s20_quarterround``, the connection between this and the functionally pure
+Cryptol specification will be made clear through the SAW specification.
+
 The next function, ``Salsa20_expansion``, demonstrates a unique feature of
 Cryptol's type system: Arithmetic predicates. Part of the type is
 ``{a} (a >= 1, 2 >= a) => ...``, which says that ``a`` is a type variable
-which can only take numeric values 1 and 2. This allwed this function to be
+which can only take numeric values 1 and 2. This allowed this function to be
 written to be polymorphic over the allowed key sizes, namely 16- and 32-bit.
 Note the behavior in the definition that is conditioned on the value of ``a``:
 
@@ -136,50 +158,6 @@ following diagram:
 
 TODO: Insert boxes/arrows showing data flow for Salsa20
 
-The C Implementation to Verify
-------------------------------
-
-As stated above, the C implementation is very similar to its specification, the
-most obvious difference being heavy use of in-place mutation and the encryption
-function itself being restricted to 32-bit keys. For this reason, only a
-couple of the functions are explicated in detail (and it is these functions
-whose SAWScript specifications will be studied later).
-
-The ``s20_quarterround`` shows the most important deviations from the
-specification code, namely the use of in-place mutation rather than the
-functional paradigm of Cryptol:
-
-.. literalinclude:: examples/salsa20/salsa20.c
-  :language: C
-  :start-after: // BEGIN QUARTERROUND
-  :end-before: // END QUARTERROUND
-
-This function directly modifies the targets of its argument pointers, which
-should be contrasted with the building/returning of a new sequence in Cryptol.
-This paradigm shift will be visible in the SAWScript specification, as that is
-where the memory management of the C is connected to the pure computation of
-the Cryptol.
-
-The other function of note is the Salsa20 hash. The function ``s20_hash``
-explicitly performs the iterations of the lower-level functions, in contrast to
-the use of sequence comprehensions and laziness in the Cryptol implementation.
-Arguably, this code is clearer than the correspondent Cryptol, but this is
-certainly more of a matter of taste than anything:
-
-.. literalinclude:: examples/salsa20/salsa20.c
-  :language: C
-  :start-after: // BEGIN SALSA20
-  :end-before: // END SALSA20
-
-Again note the pervasive use of in-place mutation: As with ``s20_quarterround``
-and the other functions necessary to implement Salsa20, this will be connected
-to the pure computations in the Cryptol specification via the SAWScript
-specification which details memory layouts.
-
-A diagrammatic view of the C implementation is less informative than that for
-Cryptol due in large part to the pervasive use of in-place mutation, so none is
-provided here.
-
 
 SAW Specification and Verification
 ----------------------------------
@@ -192,7 +170,7 @@ performs the actual verification.
 
 First, one of the helper functions. A number of the functions to verify all
 have the same shape: They take a single pointer and update the value pointed to
-according to some Cryptol function. This pattern is abstracted out to the
+via some pure function. This pattern is abstracted out to the
 SAWScript function ``oneptr_update_func n ty f``, which takes ``n : String``
 naming the parameter for pretty-printing,  ``ty : LLVMType`` describing the
 parameter type, and ``f : Term`` to apply to the parameter:
@@ -241,14 +219,15 @@ verifications within ``main`` are passed along:
   :emphasize-lines: 4-11
 
 In effect, threading these earlier verification results through tells SAW
-"if you see these functions, no need to go deeper: they're all good." This same
-mechanism is used to specify facts that should be assumed during verification.
+"if you see calls out to these functions, no need to go deeper: they're all
+good." This same mechanism is used to specify assumptions to make during
+verification.
 
 Other things to note about this particular example not related to the use of
 compositional verification are:
 
 1. The use of the path-satisfiability parameter to verify functions containing
-   loops that aren't 'obviously' bounded (i.e. bounded by a constant.)
+   loops that aren't 'obviously' bounded (i.e. bounded by a constant)
 2. The lack of verification of the 16-bit version of Salsa20
 3. The necessity of verifying the encryption for particular message sizes
 
@@ -275,11 +254,11 @@ In ``examples/salsa20``, there are two SAW specifications:
 parameter in each call to ``crucible_llvm_verify`` with the empty list,
 effectively disabling compositional verification. The one exception to this is
 in the verification of ``s20_hash``; not using compositional verification for
-this function appeared to cause non-termination.
+this function did not terminate in a reasonable amount of time.
 
 These two verification tasks were run on a 2019 15-inch MacBook Pro, 2.4 GHz
 8-Core Intel i9 processor, 32 GB DDR4 RAM. The values shown are the average
-over five runs.
+over five runs:
 
 +------------------+---------------+-------------------+
 |                  | Compositional | Non-Compositional |
@@ -288,9 +267,10 @@ over five runs.
 +------------------+---------------+-------------------+
 
 Even with this limited data set, the benefits of using compositional
-verification are clear: There's an effectively 2x increase in speed, and this
-experiment didn't even eliminate *every* instance of compositional
-verification.
+verification are clear: There's an effectively 2x increase in speed in this
+example, even accounting for the fact that the verification of ``s20_hash``
+is still treated compositionally.
+
 
 .. rubric:: Footnotes
 

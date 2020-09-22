@@ -269,9 +269,28 @@ can operate on any input size, SAW can only operate on finite programs.
 Comparing Compositional and Non-compositional Verification
 ----------------------------------------------------------
 
-A natural question is, "what happens when you *don't* use compositional
-verification?"
+In ``examples/salsa20``, there are two SAW specifications:
+``salsa20_compositional.saw``, which contains ``main`` as presented above, and
+``salsa20_noncompositional``, which replaces the ``[CrucibleMethodSpec]``
+parameter in each call to ``crucible_llvm_verify`` with the empty list,
+effectively disabling compositional verification. The one exception to this is
+in the verification of ``s20_hash``; not using compositional verification for
+this function appeared to cause non-termination.
 
+These two verification tasks were run on a 2019 15-inch MacBook Pro, 2.4 GHz
+8-Core Intel i9 processor, 32 GB DDR4 RAM. The values shown are the average
+over five runs.
+
++------------------+---------------+-------------------+
+|                  | Compositional | Non-Compositional |
++==================+===============+===================+
+| Average Time (s) |      2.64     |       5.39        |
++------------------+---------------+-------------------+
+
+Even with this limited data set, the benefits of using compositional
+verification are clear: There's an effectively 2x increase in speed, and this
+experiment didn't even eliminate *every* instance of compositional
+verification.
 
 .. rubric:: Footnotes
 

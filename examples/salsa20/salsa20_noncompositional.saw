@@ -116,7 +116,7 @@ let main : TopLevel () = do {
     rr     <- crucible_llvm_verify m "s20_rowround"     []    false rowround_setup       z3;
     cr     <- crucible_llvm_verify m "s20_columnround"  []    false columnround_setup    z3;
     dr     <- crucible_llvm_verify m "s20_doubleround"  [] false doubleround_setup    z3;
-    s20    <- crucible_llvm_verify m "s20_hash"         []    false salsa20_setup        z3;
+    s20    <- crucible_llvm_verify m "s20_hash"         [dr]    false salsa20_setup        z3;
     s20e32 <- crucible_llvm_verify m "s20_expand32"     []   true  salsa20_expansion_32 z3;
     s20encrypt_63 <- crucible_llvm_verify m "s20_crypt32" [] true (s20_encrypt32 63) z3;
     s20encrypt_64 <- crucible_llvm_verify m "s20_crypt32" [] true (s20_encrypt32 64) z3;

@@ -148,7 +148,9 @@ sequence consists of ``doubleround`` applied to each element of ``zs``
 itself. In other words, the second element is found by applying
 ``doubleround`` to ``xw``, the third by applying ``doubleround`` to
 the second, and so forth. Stepping through the evaluation yields this
-sequence::
+sequence:
+
+.. code-block:: Cryptol
 
     [xw] # [ doubleround zi | zi <- zs ]
 
@@ -166,20 +168,21 @@ The resulting sequence consists of ``doubleround`` applied :math:`n`
 times to ``xw`` at position :math:`n`. This process could, in
 principle, continue forever. In Cryptol, however, sequences are
 computed lazily, so as long as nothing ever asks for the last element,
-the program will still terminate.
+the program will still terminate. 
 
 The final definition is ``ar``, which adds ``xw`` to the tenth element
 of ``zs``, which is the result of applying ``doubleround`` ten times
-to ``xw``. The final result of ``Salsa20`` is computed by re-joining
-the split words into the appropriate-sized sequence.
+to ``xw``. In Cryptol, ``+`` is extended over sequences so that adding
+two sequences adds their elements. The final result of ``Salsa20`` is
+computed by re-joining the split words into the appropriate-sized
+sequence.
 
-.. DTC: Do we want to link to Medium, given their shady practices? If so, we should at least credit the author rather than the blog hoster. `in this excellent Medium article <https://medium.com/background-thread/what-is-lazy-evaluation-programming-word-of-the-day-8a6f4410053f>`_.
+.. DTC: Do we really want to link to something on Medium, given their shady practices? If so, we should at least credit the author rather than the blog hoster. `in this excellent Medium article <https://medium.com/background-thread/what-is-lazy-evaluation-programming-word-of-the-day-8a6f4410053f>`_.
 
 
-Compare this to the C implementation, which explicitly performs the iterations
-of lower-level functions as described in Bernstein's specification. Arguably,
-this code is clearer than the correspondent Cryptol, but this is certainly more
-of a matter of taste than anything:
+The C implementation uses in-place mutation and an explicit loop. Due
+to the use of mutation, it must be careful to copy data that will be
+used again later.
 
 .. literalinclude:: examples/salsa20/salsa20.c
   :language: C
@@ -190,12 +193,20 @@ Note again the pervasive use of in-place mutation - as with
 ``s20_quarterround``, the connection between this and the functionally pure
 Cryptol specification will be made clear through the SAW specification.
 
-The next function, ``Salsa20_expansion``, demonstrates a unique feature of
-Cryptol's type system: Arithmetic predicates. Part of the type is
-``{a} (a >= 1, 2 >= a) => ...``, which says that ``a`` is a type variable
-which can only take numeric values 1 and 2. This allowed this function to be
-written to be polymorphic over the allowed key sizes, namely 16- and 32-bit.
-Note the behavior in the definition that is conditioned on the value of ``a``:
+Salsa20 supports two key sizes: 16 and 32 bytes. Rather than writing
+two separate implementations, ``Salsa20_expansion`` uses two unique
+feature of Cryptol's type system to implement both at once. These
+features are numbers in types and arithmetic predicates. Numbers in
+types, seen earlier, are used for the lengths of sequences, and it is
+possible to write functions that work on *any* length. The beginning
+of the type signature reads ``{a} (a >= 1, 2 >= a) => ...``, which
+says that ``a`` can only be 1 or 2. Later on in the type,
+``[16*a][8]`` is used for the key length, resulting in a length of
+either 16 or 32 8-bit bytes. The back-tick operator allows a program
+to inspect the value of a length from a type, which is used in the
+``if`` expression to select the appropriate input to
+``Salsa20``. Cryptol strings, like C string literals, represent
+sequences of ASCII bytes values.
 
 .. literalinclude:: examples/salsa20/Salsa20.cry
   :language: Cryptol

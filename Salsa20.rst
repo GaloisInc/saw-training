@@ -206,15 +206,23 @@ either 16 or 32 8-bit bytes. The back-tick operator allows a program
 to inspect the value of a length from a type, which is used in the
 ``if`` expression to select the appropriate input to
 ``Salsa20``. Cryptol strings, like C string literals, represent
-sequences of ASCII bytes values.
+sequences of ASCII bytes values. Their values come from the
+specification.
 
 .. literalinclude:: examples/salsa20/Salsa20.cry
   :language: Cryptol
   :start-after: // BEGIN SALSA20_EXPANSION
   :end-before: // END SALSA20_EXPANSION
 
-The key expansion function finally allows for the encryption function to be
-implemented. Note the further use of arithmetic predicates and laziness:
+The encryption function takes a tuple of three parameters: a key
+``k``, an eight-byte `nonce`_ ``v``, and a message ``m`` of at most
+:math:`2^{70}` bytes. In accordance with Section 10 of the
+specification, it computes the `Salsa20_expansion` of the nonce and
+sufficient subsequent numbers, and ``take`` truncates it to the
+desired length. The message is combined with this sequence, yielding the
+result.
+
+.. _nonce: https://en.wikipedia.org/wiki/Cryptographic_nonce
 
 .. literalinclude:: examples/salsa20/Salsa20.cry
   :language: Cryptol
@@ -225,55 +233,74 @@ implemented. Note the further use of arithmetic predicates and laziness:
 SAW Specification and Verification
 ----------------------------------
 
-The SAW specification for this Salsa20 implementation is comprised of a couple
-of convenient helper functions, a specification for each of the interesting
-functions in the Salsa20 specification (i.e. the functions detailed in
-Bernstein's specification document), and a ``main : TopLevel ()`` which
-performs the actual verification.
+The SAW specification for this Salsa20 implementation is comprised of
+a couple of convenient helper functions, a specification for each of
+the interesting functions in the Salsa20 specification (i.e. the
+functions detailed in Bernstein's specification document), and a
+defined command ``main`` that performs the actual verification.
 
-First, one of the helper functions. A number of the functions to verify all
-have the same shape: They take a single pointer and update the value pointed to
-via some pure function. This pattern is abstracted out to the
-SAWScript function ``oneptr_update_func n ty f``, which takes ``n : String``
-naming the parameter for pretty-printing,  ``ty : LLVMType`` describing the
-parameter type, and ``f : Term`` to apply to the parameter:
+One big difference between the Cryptol specification and the C
+implementation is that Cryptol, a functional language, returns new
+values, while C, an imperative language, tends to write new values to
+a pointer's target. Typically, the C version of the program will
+overwrite an argument with the value that the Cryptol version
+returns. This pattern is abstracted over in ``oneptr_update_func``, a
+SAWScript command that describes this relationship between C and
+Cryptol versions of a function. The arguments are ``n : String`` that
+names the parameter for pretty-printing, ``ty : LLVMType`` that
+describes the parameter type, and the function ``f : Term`` to apply
+to the parameter.
 
 .. literalinclude:: examples/salsa20/salsa20_compositional.saw
   :language: Cryptol
   :start-after: // BEGIN ONEPTR_UPDATE
   :end-before: // END ONEPTR_UPDATE
 
-This helper function is sufficient to build the specfications for many of the
-functions the implementation of Salsa20 depends on.
-
-These functions are all dependent on ``s20_quarterround``, though, so that
-function also needs a specification:
+All of Salsa20 depends on ``s20_quarterround``. Here is its
+specification:
 
 .. literalinclude:: examples/salsa20/salsa20_compositional.saw
   :language: Cryptol
   :start-after: // BEGIN QUARTERROUND
   :end-before: // END QUARTERROUND
 
-The helper function ``ptr_to_fresh`` allocates space for a new symbolic
-variable of the given type, returning both the symbol and the pointer. The
-symbols are passed to the Cryptol function ``quarterround`` to compute the
-expected result values, which are then used as the expected targets of the
-pointers in the post-condition of the SAW specification.
+The helper ``pointer_to_fresh`` is the same as the one in
+:ref:`swap-example`. It allocates space for a new symbolic variable of
+the given type, returning both the symbolic value and the pointer to
+it. The symbolic values are passed to the Cryptol function
+``quarterround`` to compute the expected result values. Because the
+function inputs are symbolic, the outputs are also mathematical
+expressions that reflect the function's behavior. These expected result
+values are then used as the expected targets of the pointers in the
+post-condition of the SAW specification.
 
-The specification for ``s20_hash`` is one for which ``oneptr_update_func`` is
-sufficient:
+The specification for ``s20_hash`` is an example of one for which
+``oneptr_update_func`` is useful.
 
 .. literalinclude:: examples/salsa20/salsa20_compositional.saw
   :language: Cryptol
   :start-after: // BEGIN SALSA20
   :end-before: // END SALSA20
 
-Putting everything together, ``main`` will verify the implementation functions
-according to these specifications. This is where the use of compositional
-verification is realized: In calls to ``crucible_llvm_verify``, it is possible
-to specify a list of ``CrucibleMethodSpec`` which come from earlier
-verifications. Notice in the highlighted lines that the results of earlier
-verifications within ``main`` are passed along:
+Putting everything together, ``main`` verifies the implementation
+functions according to these specifications. ``main`` has the type
+``TopLevel ()`` --- this is the type of commands that can be run at
+the top level of a SAWScript program. In :ref:`swap-example`,
+``crucible_llvm_verify`` was used on its own, and its return value was
+discarded. However, verification actually returns a useful result: it
+returns an association between a specification and the fact that the
+given function has been verified to fulfill it. In SAWScript, this
+association has the type ``CrucibleMethodSpec``. Because
+``crucible_llvm_verify`` is a command, the returned value is saved
+using the ``<-`` operator.
+
+The third argument to ``crucible_llvm_verify`` is a list of
+``CrucibleMethodSpec`` objects. While performing verification, the
+work that was done to construct a ``CrucibleMethodSpec`` is
+re-used. Specifically, instead of recursively symbolically executing a
+verified function, the prior specification is used as an
+axiomatization of its behavior. In the definition of ``main``, the
+highlighted lines pass the results of earlier verifications along:
 
 .. literalinclude:: examples/salsa20/salsa20_compositional.saw
   :language: Cryptol
@@ -281,31 +308,23 @@ verifications within ``main`` are passed along:
   :end-before: // END MAIN
   :emphasize-lines: 4-11
 
-In effect, threading these earlier verification results through tells SAW
-"if you see calls out to these functions, no need to go deeper: they're all
-good." This same mechanism is used to specify assumptions to make during
-verification.
+This example also uses the fourth argument to
+``crucible_llvm_verify``. During symbolic execution, conditionals
+require that both branches be explored. If the fourth argument is
+``true``, then an SMT solver is used to rule out impossible
+branches. For some problems, the overhead of the solver exceeds the
+time saved on exploring branches; for others, a short time spent in
+the solver saves a long time spent in the symbolic execution
+engine. Ruling out impossible branches can also allow termination of
+programs in which the number of iterations can depend on a symbolic
+value. This is called path satisfiability checking.
 
-Other things to note about this particular example not related to the use of
-compositional verification are:
-
-1. The use of the path-satisfiability parameter to verify functions containing
-   loops that aren't 'obviously' bounded (i.e. bounded by a constant)
-2. The lack of verification of the 16-byte key version of Salsa20
-3. The necessity of verifying the encryption for particular message sizes
-
-To 1: The details of path-satisfiability are beyond the scope of this tutorial,
-but in essence, this must be turned on when code contains loops that are
-bounded, but not by a constant. SAW does not yet fully support verification of
-code containing potentially unbounded loops.
-
-To 2: The C implementation being verified does not provide the 16-byte version
-of the encryption algorithm itself, hence it's missing from the SAW code.
-
-To 3: This is related to 1, in that it is an inherent limitation of SAW that
-functions accepting arbitrarily sized inputs cannot be verified except on
-particluar instantiations of that input size. In other words, while Salsa20
-can operate on any input size, SAW can only operate on finite programs.
+The 16-byte version of Salsa20 is not verified, because the C program
+does not implement it. Also, Salsa20 is verified only with respect to
+some particular message lengths, because SAW is not yet capable of
+verifying infinite programs. This is why ``main`` verifies multiple
+lengths, in the hope that this is sufficient to increase our
+confidence.
 
 
 Comparing Compositional and Non-compositional Verification
@@ -313,7 +332,7 @@ Comparing Compositional and Non-compositional Verification
 
 In ``examples/salsa20``, there are two SAW specifications:
 ``salsa20_compositional.saw``, which contains ``main`` as presented above, and
-``salsa20_noncompositional``, which replaces the ``[CrucibleMethodSpec]``
+``salsa20_noncompositional``, which replaces the ``CrucibleMethodSpec`` list
 parameter in each call to ``crucible_llvm_verify`` with the empty list,
 effectively disabling compositional verification. The one exception to this is
 in the verification of ``s20_hash``; not using compositional verification for
@@ -330,7 +349,7 @@ over five runs:
 +------------------+---------------+-------------------+
 
 Even with this limited data set, the benefits of using compositional
-verification are clear: There's an effectively 2x increase in speed in this
+verification are clear: There's effectively a 2x increase in speed in this
 example, even accounting for the fact that the verification of ``s20_hash``
 is still treated compositionally.
 

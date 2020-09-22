@@ -16,25 +16,25 @@ let alloc_init_readonly ty v = do {
 };
 // END ALLOC_INIT_READONLY
 
-// BEGIN PTR_TO_FRESH
-let ptr_to_fresh n ty = do {
+// BEGIN POINTER_TO_FRESH
+let pointer_to_fresh n ty = do {
     x <- crucible_fresh_var n ty;
     p <- alloc_init ty x;
     return (x, p);
 };
-// END PTR_TO_FRESH
+// END POINTER_TO_FRESH
 
-// BEGIN PTR_TO_FRESH_READONLY
-let ptr_to_fresh_readonly n ty = do {
+// BEGIN POINTER_TO_FRESH_READONLY
+let pointer_to_fresh_readonly n ty = do {
     x <- crucible_fresh_var n ty;
     p <- alloc_init_readonly ty x;
     return (x, p);
 };
-// END PTR_TO_FRESH_READONLY
+// END POINTER_TO_FRESH_READONLY
 
 // BEGIN ONEPTR_UPDATE
 let oneptr_update_func n ty f = do {
-    (x, p) <- ptr_to_fresh n ty;
+    (x, p) <- pointer_to_fresh n ty;
     crucible_execute_func [p];
     crucible_points_to p (crucible_term {{ f x }});
 };
@@ -42,10 +42,10 @@ let oneptr_update_func n ty f = do {
 
 // BEGIN QUARTERROUND
 let quarterround_setup : CrucibleSetup () = do {
-    (y0, p0) <- ptr_to_fresh "y0" (llvm_int 32);
-    (y1, p1) <- ptr_to_fresh "y1" (llvm_int 32);
-    (y2, p2) <- ptr_to_fresh "y2" (llvm_int 32);
-    (y3, p3) <- ptr_to_fresh "y3" (llvm_int 32);
+    (y0, p0) <- pointer_to_fresh "y0" (llvm_int 32);
+    (y1, p1) <- pointer_to_fresh "y1" (llvm_int 32);
+    (y2, p2) <- pointer_to_fresh "y2" (llvm_int 32);
+    (y3, p3) <- pointer_to_fresh "y3" (llvm_int 32);
 
     crucible_execute_func [p0, p1, p2, p3];
 
@@ -79,8 +79,8 @@ let salsa20_setup =
 
 // BEGIN SALSA20_EXPANSION
 let salsa20_expansion_32 = do {
-    (n, pn) <- ptr_to_fresh_readonly "n" (llvm_array 16 (llvm_int 8));
-    (k, pk) <- ptr_to_fresh_readonly "k" (llvm_array 32 (llvm_int 8));
+    (n, pn) <- pointer_to_fresh_readonly "n" (llvm_array 16 (llvm_int 8));
+    (k, pk) <- pointer_to_fresh_readonly "k" (llvm_array 32 (llvm_int 8));
 
     pks <- crucible_alloc (llvm_array 64 (llvm_int 8));
 
@@ -93,9 +93,9 @@ let salsa20_expansion_32 = do {
 
 // BEGIN SALSA20_ENCRYPT
 let s20_encrypt32 n = do {
-    (key, pkey) <- ptr_to_fresh_readonly "key" (llvm_array 32 (llvm_int 8));
-    (v, pv) <- ptr_to_fresh_readonly "nonce" (llvm_array 8 (llvm_int 8));
-    (m, pm) <- ptr_to_fresh "buf" (llvm_array n (llvm_int 8));
+    (key, pkey) <- pointer_to_fresh_readonly "key" (llvm_array 32 (llvm_int 8));
+    (v, pv) <- pointer_to_fresh_readonly "nonce" (llvm_array 8 (llvm_int 8));
+    (m, pm) <- pointer_to_fresh "buf" (llvm_array n (llvm_int 8));
 
     crucible_execute_func [ pkey
                           , pv

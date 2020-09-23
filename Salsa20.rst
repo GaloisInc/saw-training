@@ -282,6 +282,8 @@ The specification for ``s20_hash`` is an example of one for which
   :start-after: // BEGIN SALSA20
   :end-before: // END SALSA20
 
+.. _compositional-verification:
+
 Putting everything together, ``main`` verifies the implementation
 functions according to these specifications. ``main`` has the type
 ``TopLevel ()`` --- this is the type of commands that can be run at
@@ -352,6 +354,25 @@ Even with this limited data set, the benefits of using compositional
 verification are clear: There's effectively a 2x increase in speed in this
 example, even accounting for the fact that the verification of ``s20_hash``
 is still treated compositionally.
+
+Exercise: Rot13
+~~~~~~~~~~~~~~~
+
+Rot13 is a Caesar cipher that is its own inverse. In it, each letter
+is mapped to the letter that is 13 places greater than it in the
+alphabet, modulo 26. Non-letters are untouched, and case is
+preserved. For instance, "abc" becomes "nop", and "SAW is fun!"
+becomes "FNJ vf sha!".
+
+Your task is to implement rot13 in C, and verify it using SAW.
+
+Start by writing a function that performs a single character of rot13,
+assuming 7-bit ASCII encoding. Verify it using SAW and Cryptol.
+
+Then, write a function that uses your single-character rot13 to
+perform rot13 on a string with precisely 20 characters in it. Verify
+this using SAW and Cryptol with compositional verification.
+
 
 
 .. rubric:: Footnotes

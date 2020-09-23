@@ -24,8 +24,6 @@ The program to be verified is ``swap``, below:
 
 ``swap`` is correct if, after calling it, the new target of the first pointer is the former target of the second pointer, and the new target of the second pointer is the former target of the first pointer. This description is called a *specification*. A :term:`specification` can be written in a number of formats, including English sentences, but also in machine-readable forms. The advantage of machine-readable specifications is that they can be used as part of an automated workflow.
 
-
-
 An example machine-readable specification for ``swap`` is ``swap_spec``:
 
 .. literalinclude:: examples/swap/swap.c
@@ -56,6 +54,11 @@ The third incorrect ``swap`` dereferences a null pointer when its first argument
   :start-after: // BEGIN SWAP_BROKEN3
   :end-before: // END SWAP_BROKEN3
 
+Exercise: A Broken Swap
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Try to come up with a buggy variant of ``swap`` that seems like a mistake that could be made by accident. Add it to ``swap.c`` in the ``examples`` directory.
+
 Testing Programs
 ~~~~~~~~~~~~~~~~
 
@@ -83,6 +86,12 @@ Finally, it is possible to exhaustively check the values by enumerating and test
 Formal verification is a useful supplement to testing. Like exhaustive testing, verification tools provide full coverage of all inputs, but they need not actually run each case. This is accomplished by reasoning about mathematical models of a program, knocking out huge regions of the state space with single steps. There are many tools and techniques for performing full formal verification, each suitable to different classes of problem. SAW is particularly suited to imperative programs that don't contain potentially-unbounded loops. Verification does tend to be significantly more expensive to implement than systematic testing, both because it requires specialized knowledge and because developing mathematical proofs can take much longer that writing test cases. However, for many programs, automated tools like SAW can be used with similar levels of effort to testing, but resulting in much stronger guarantees. At the same time, checking a proof can sometimes be much faster than testing large parts of the input space, leading to quicker feedback during development.
 
 SAW works in two phases: first, it converts its target program to an internal representation that's more amenable to verification. Then, external solvers are used together with occasional manual guidance to construct proofs.
+
+
+Exercise: Testing Your Broken Swap
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Try to discover your own broken version of ``swap`` using manual and random testing. How well did they solve this particular problem?
 
 Symbolic Execution
 ------------------
@@ -236,9 +245,26 @@ After verification, we know that this is the case *no matter which integers* :ma
 
     :term:`SAWScript` distinguishes between defining a name and saving the result of a command. Use ``let`` to define a name, which may refer to a command or a value, and ``<-`` to run a command and save the result under the given name.
 
-Finally, on line 10, the ``crucible_llvm_verify`` command is used to instruct SAW to carry out verification. The important arguments are ``swapmod``, which specifies the LLVM module that contains the code to be verified; ``"swap_spec"``, the function to be symbolically executed; ``swap_is_ok``, the SAW specification to check ``"swap_spec"`` against; and ``abc``, the name of the solver that will check whether the program satisfies the specification. The other two arguments control the use of helpers and details of symbolic execution, and are described later in this tutorial.
+Finally, on line 10, the ``crucible_llvm_verify`` command is used to instruct SAW to carry out verification. The important arguments are ``swapmod``, which specifies the LLVM module that contains the code to be verified; ``"swap_spec"``, the function to be symbolically executed; ``swap_is_ok``, the SAW specification to check ``"swap_spec"`` against; and ``abc``, the name of the solver that will check whether the program satisfies the specification. The other two arguments control the use of helpers and certain details of symbolic execution, and are described :ref:`later in this tutorial<compositional-verification>`.
 
-.. TODO link
+Exercises: Getting Started with SAW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+1. Write a function that zeroes out the target of a pointer. It should have the following prototype:
+
+   .. code-block:: C
+
+     void zero(uint32_t* x);
+
+2. Write a function ``zero_spec`` that returns ``true`` when ``zero``
+   is correct for some input. It should have the following prototype:
+
+   .. code-block:: C
+  
+     bool zero_spec(uint32_t x);
+
+3. Use SAW to verify that ``zero_spec`` always returns ``true`` for your implementation of ``zero``.
+
 
 Verification Failures
 ---------------------
@@ -271,6 +297,15 @@ Finally, for ``swap_broken3``, the output notes that a memory load failed during
     [00:11:50.086] ----------------------------------
 
 2147483648, also known as ``0x4000000``, is indeed the five-bit left shift of 67108864, also known as ``0x80000000``.
+
+Exercises: Incorrect Versions of ``zero``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+1. Write two incorrect versions of ``zero``.
+
+2. Make a version of ``zero_spec`` for each incorrect version.
+
+3. Use SAW to discover a counterexample for each incorrect version.
 
 Reference Implementations
 -------------------------
@@ -339,6 +374,16 @@ The final specification is much shorter:
   :start-after: // BEGIN SWAP_SPEC
   :end-before: // END SWAP_SPEC
 
+
+Exercises: Direct Specification for ``zero``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+1. Write a SAW specification for ``zero`` that does not involve a C
+   helper. Use the ``swap`` specification in this section as an
+   example. The zero for ``uint32_t`` can be written ``{{ 0 : [32] }}``.
+
+2. Use this specification to discover bugs in the incorrect versions
+   of ``zero``.
 
 .. _swap-cryptol:
 
@@ -454,5 +499,20 @@ The problem is that, when ``*y`` is assigned the target of ``x``, that target ha
   :end-before: // END ROTR3_FIXED
 
 SAW accepts this version without complaint, and the bug was prevented.
+
+Exercise: Arrays
+~~~~~~~~~~~~~~~~
+
+In SAW, a C array type can be referred to using ``llvm_array``, which
+takes the number of elements and their type as arguments. For
+instance, ``uint32[3]`` can be represented as ``llvm_array 3 (llvm_int
+32)``.  Similarly, the setup value that corresponds to an index in an
+array can be referred to using ``crucible_elem``. For instance, if
+``arr`` refers to an array allocated using ``crucible_alloc``, then
+``crucible_elem arr 0`` is the first element in ``arr``. These can be
+used with ``crucible_points_to``.
+
+Write a version of ``rotr3`` that expects its argument to be an array
+of three integers. Verify it using SAW.
 
 ..  LocalWords:  cryptographic

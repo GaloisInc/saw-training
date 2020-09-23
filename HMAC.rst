@@ -127,8 +127,8 @@ The final step to proof maintenance is updating the SAW portion of the
 specification. This can range in difficulty from simply updating
 memory layouts to changing what the specification actually asserts
 about the program. For the HMAC updates, the necessary changes are closer
-to the former rather than latter, since the implementation change was
-the addition of a data field.
+to the former rather than the latter, since the implementation change was
+the addition of a data field rather than overall changes to the control flow.
 
 A reliable strategy for updating ``HMAC_old.saw`` to account for
 ``outer_just_key`` is a simple search for the names of other fields already

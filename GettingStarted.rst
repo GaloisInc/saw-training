@@ -11,8 +11,9 @@ Background
 
 This tutorial is written for programmers who know C, but who do not
 necessarily have any experience with formal verification. Deep
-knowledge of C, such as being able to identify undefined behavior at a
-glance, is not required. 
+knowledge of C is not required, but familiarity with pointers and the
+concept of undefined behavior are assumed. It is not necessary to be
+able to identify undefined behavior on sight.
 
 
 Notation

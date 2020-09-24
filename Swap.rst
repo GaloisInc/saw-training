@@ -70,7 +70,7 @@ In the course of writing a program, it's common to test it against some pre-dete
   :start-after: // BEGIN SWAP_CHOSEN_VALUE_TEST
   :end-before: // END SWAP_CHOSEN_VALUE_TEST
 
-There are some downsides to testing only with chosen values, however. First off, these tests are usually compiled by the author of the code, and there is a risk that important values are not tested. This can be ameliorated by a systematic, disciplined approach to choosing test values, but it can never be completely eliminated. This particular test case is likely to catch ``swap_broken1``, but not the other two.
+There are some downsides to testing only with chosen values, however. First off, these tests are usually selected by the author of the code, and there is a risk that important values are not tested. This can be ameliorated by a systematic, disciplined approach to choosing test values, but it can never be completely eliminated. This particular test case is likely to catch ``swap_broken1``, but not the other two.
 
 
 A second approach to testing is to choose many random values at each execution, as in ``random_value_test``. This approach will eventually find mistakes, but it may not do so in a reasonable amount of time for cases like ``swap_broken2``.
@@ -91,7 +91,7 @@ SAW works in two phases: first, it converts its target program to an internal re
 Exercise: Testing Your Broken Swap
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Try to discover your own broken version of ``swap`` using manual and random testing. How well did they solve this particular problem?
+Try to discover the defects in your own broken version of ``swap`` using manual and random testing. How well did each testing technique solve this particular problem?
 
 Symbolic Execution
 ------------------
@@ -121,7 +121,7 @@ Take the following function
         return x;
     }
 
-The first step in symbolic execution is to create an unknown ``int`` called :math:`y`. Then, the program is run:
+The first step in symbolic execution is to create an unknown ``int``. Variable names don't matter, so here it is called :math:`y`. Mathematical varibles are written in a different font to show that they're different from program variables, but it can also be convenient to use different letters to avoid confusion. Then, the program is run:
 
 1. The first step in ``add5`` is to initialize the for loop. Now, ``x`` is :math:`y` and ``i`` is ``0``.
 
@@ -133,7 +133,7 @@ The first step in symbolic execution is to create an unknown ``int`` called :mat
 
 5. After the loop, the function returns the value :math:`y+5`.
 
-When provided with the symbolic input :math:`y`, ``add5`` return the symbolic output :math:`y + 5`. This means that it is equivalent to the mathematical function:
+When provided with the symbolic input :math:`y`, ``add5`` returns the symbolic output :math:`y + 5`. This means that it is equivalent to the mathematical function:
 
 .. math::
 
@@ -179,7 +179,7 @@ Symbolic execution is only typically applicable to programs whose termination do
 .. code-block:: C
 
     unsigned int add(unsigned int x, unsigned int y) {
-        for (i = 0; i < y; i ++) {
+        for (unsigned int i = 0; i < y; i ++) {
             x++;
         }
         return x;
@@ -192,7 +192,7 @@ Most cryptographic primitives fall into the class of programs for which symbolic
 Running SAW
 -----------
 
-SAW is a tool for extracting functions that model programs, and then applying both automatic and manual reasoning to them. Typically, they will be compared against a :term:`specification` of some kind. SAW uses a framework called Crucible to symbolically execute imperative programs, while it uses custom simulators for other languages. Crucible is an extensible framework - it is capable of symbolically executing LLVM IR, JVM bytecode, x86 machine code, Rust's MIR internal representation, and a number of others.
+SAW is a tool for extracting functions that model programs, and then applying both automatic and manual reasoning to them. Typically, they will be compared against a :term:`specification` of some kind. SAW uses a framework called Crucible to symbolically execute imperative programs, while it uses custom simulators for other languages. Crucible is an extensible framework --- it is capable of symbolically executing LLVM IR, JVM bytecode, x86 machine code, Rust's MIR internal representation, and a number of others.
 
 The first step to using SAW on ``swap`` is to construct its representation in LLVM IR. It is important to pass ``clang`` the ``-O1`` flag, because important symbols are stripped at higher optimization levels, while lower optimization levels yield code that is less amenable to symbolic execution. It can be convenient to include this in a ``Makefile``:
 
@@ -225,7 +225,7 @@ The program specification can be divided into three main components: a precondit
 
     SAW is a general-purpose framework for combining a number of simulation tools, proof tools, and solvers. Crucible is an extensible symbolic execution framework that serves as the basis for SAW's LLVM support.
 
-Here, the precondition consists of two invocations of ``crucible_fresh_var``, which creates symbolic variables. Internally, these symbolic variables are represented in the internal language :term:`SAWCore`. ``crucible_fresh_var`` takes two arguments: a string, which is a user-chosen name that might show up in error messages, and the type for the symbolic variable. After the precondition, the :term:`SAWScript` variables ``x`` and ``y`` are bound to the respective symbolic values :math:`x` and :math: `y`.
+Here, the precondition consists of two invocations of ``crucible_fresh_var``, which creates symbolic variables. Internally, these symbolic variables are represented in the internal language :term:`SAWCore`. ``crucible_fresh_var`` takes two arguments: a string, which is a user-chosen name that might show up in error messages, and the type for the symbolic variable. After the precondition, the :term:`SAWScript` variables ``x`` and ``y`` are bound to the respective symbolic values :math:`x` and :math:`y`.
 
 .. index:: term
 
@@ -241,11 +241,13 @@ Translated to English, ``swap_is_ok`` says:
 
 After verification, we know that this is the case *no matter which integers* :math:`x` and :math:`y` are.
 
+In other words, ``swap_is_ok`` wraps the C specification ``swap_spec``. The C specification takes care of making sure that the pointer arguments to ``swap`` are non-null, and it checks that the pointers have exchanged targets after calling ``swap``. The SAW wrapper establishes the symbolic values, and ensures that the return value is ``true``.
+
 .. note::
 
     :term:`SAWScript` distinguishes between defining a name and saving the result of a command. Use ``let`` to define a name, which may refer to a command or a value, and ``<-`` to run a command and save the result under the given name.
 
-Finally, on line 10, the ``crucible_llvm_verify`` command is used to instruct SAW to carry out verification. The important arguments are ``swapmod``, which specifies the LLVM module that contains the code to be verified; ``"swap_spec"``, the function to be symbolically executed; ``swap_is_ok``, the SAW specification to check ``"swap_spec"`` against; and ``abc``, the name of the solver that will check whether the program satisfies the specification. The other two arguments control the use of helpers and certain details of symbolic execution, and are described :ref:`later in this tutorial<compositional-verification>`.
+Finally, on line 10, the ``crucible_llvm_verify`` command is used to instruct SAW to carry out verification. The important arguments are ``swapmod``, which specifies the LLVM module that contains the code to be verified; ``"swap_spec"``, the function to be symbolically executed; ``swap_is_ok``, the SAW specification to check ``"swap_spec"`` against; and ``abc``, the name of the solver that will check whether the program satisfies the specification. The other two arguments control the use of helpers and certain details of symbolic execution, and are described :ref:`later in this tutorial<compositional-verification>`. This verification script provides the same level of assurance that exhaustive testing would provide, but it completes in a tiny fraction of the time, fast enough to be part of a standard CI workflow.
 
 Exercises: Getting Started with SAW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -273,28 +275,28 @@ Not all programs fulfill their :term:`specification`. Sometimes, the specificati
 
 Using a similar :term:`SAWScript` file to attempt to verify ``swap_broken1`` (which simply doesn't swap the inputs) yields the following output in less than half a second::
 
-    [23:52:39.817] ----------Counterexample----------
-    [23:52:39.817]   x: 2147483648
-    [23:52:39.817]   y: 0
-    [23:52:39.817] ----------------------------------
+    ----------Counterexample----------
+      x: 2147483648
+      y: 0
+    ----------------------------------
 
-Not only did SAW correctly determine that the program is incorrect, it also provided an example input that can be used for debugging.
+Not only did SAW correctly determine that the program is incorrect, it also provided an example input that can be used for debugging. The specific counterexample that is chosen may vary between solvers, particular versions of a solver, or even from run to run.
 
 For ``swap_broken2``, the following counterexample is found, again in less than half a second::
 
-    [00:07:22.536] ----------Counterexample----------
-    [00:07:22.536]   x: 4142351
-    [00:07:22.536]   y: 4142350
-    [00:07:22.536] ----------------------------------
+    ----------Counterexample----------
+      x: 4142351
+      y: 4142350
+    ----------------------------------
 
 The value for ``x`` here is the constant in the source code that causes the program to return an incorrect result.
 
 Finally, for ``swap_broken3``, the output notes that a memory load failed during a particular control path. The counterexample provided is::
 
-    [00:11:50.086] ----------Counterexample----------
-    [00:11:50.086]   x: 2147483648
-    [00:11:50.086]   y: 67108864
-    [00:11:50.086] ----------------------------------
+    ----------Counterexample----------
+      x: 2147483648
+      y: 67108864
+    ----------------------------------
 
 2147483648, also known as ``0x4000000``, is indeed the five-bit left shift of 67108864, also known as ``0x80000000``.
 
@@ -437,7 +439,7 @@ As needs change, programs and their specifications must evolve. A verification-o
 
 This section describes the process of adapting ``swap`` to changes in a specification. Please follow along yourself to gain experience with understanding the feedback that SAW provides during this process.
 
-Instead of swapping two numbers, the new version is should rotate three numbers. Expressed in Cryptol, the specification is:
+Instead of swapping two numbers, the new version should rotate three numbers. Expressed in Cryptol, the specification is:
 
 .. literalinclude:: examples/rotr3/Rotr3.cry
   :language: Cryptol

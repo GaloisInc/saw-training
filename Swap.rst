@@ -22,7 +22,7 @@ The program to be verified is ``swap``, below:
 
 .. index:: specification
 
-``swap`` is correct if, after calling it, the new target of the first pointer is the former target of the second pointer, and the new target of the second pointer is the former target of the first pointer. This description is called a *specification*. A :term:`specification` can be written in a number of formats, including English sentences, but also in machine-readable forms. The advantage of machine-readable specifications is that they can be used as part of an automated workflow.
+``swap`` is correct if, after calling it, the new target of the first pointer is the former target of the second pointer, and the new target of the second pointer is the former target of the first pointer. The implementer of ``swap`` gets to assume that the pointers are not null, and that they point at initialized memory. This description is called a *specification*. A :term:`specification` can be written in a number of formats, including English sentences, but also in machine-readable forms. The advantage of machine-readable specifications is that they can be used as part of an automated workflow.
 
 An example machine-readable specification for ``swap`` is ``swap_spec``:
 
@@ -337,7 +337,7 @@ Most SAW specifications are not written in C. Instead, they are typically writte
   :start-after: // BEGIN SWAP_SPEC
   :end-before: // END SWAP_SPEC
 
-This specification begins by declaring the symbolic values ``x`` and ``y``, just as before. The next step is to establish a pointer to each symbolic value, because ``swap`` takes pointers as arguments. Establishing a pointer consists of two steps: the first, using ``crucible_alloc``, creates a setup value that represents an abstract pointer to nothing in particular; and the second, using ``crucible_points_to``, asserts that the pointer actually points at the symbolic value. In the postcondition (after the ``crucible_execute_func`` call),  ``crucible_points_to`` is used to assert that the pointers now point at the other value.
+This specification begins by declaring the symbolic values ``x`` and ``y``, just as before. The next step is to establish a pointer to each symbolic value, because ``swap`` takes pointers as arguments. Establishing a pointer consists of two steps: the first, using ``crucible_alloc``, creates a setup value that represents an abstract pointer to nothing in particular; and the second, using ``crucible_points_to``, asserts that the pointer actually points at the symbolic value. Because the precondition sets up the arguments using ``crucible_alloc`` and ``crucible_points_to``, ``swap`` will be called with non-null pointers. In the postcondition (after the ``crucible_execute_func`` call),  ``crucible_points_to`` is used to assert that the pointers now point at the other value.
 
 Writing a :term:`specification` in :term:`SAWScript` instead of C has a number of advantages:
 

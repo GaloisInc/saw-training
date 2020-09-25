@@ -320,7 +320,7 @@ does not implement it. Also, Salsa20 is verified only with respect to
 some particular message lengths, because SAW is not yet capable of
 verifying infinite programs. This is why ``main`` verifies multiple
 lengths, in the hope that this is sufficient to increase our
-confidence. 
+confidence.
 
 .. DTC TODO: insert a bit about a trade-off here that's similar to
    that between testing strategies, time spent, and confidence.

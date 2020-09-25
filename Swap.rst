@@ -7,6 +7,8 @@ The more of human life that occurs online, the more important it is that we can 
 
 Most developers are used to techniques like testing, continuous integration, and thoughtful documentation that can help prevent mistakes from being introduced into a system during its development. These techniques are relatively inexpensive, but they risk missing certain classes of bugs. For the most important systems, like those that protect human life or information security, it can make sense to use full *verification*, in which a program is mathematically proved to be correct.
 
+.. DTC: This phrasing is slightly awkward. It'll work for now, but it'd be nice to get rid of the "this is" stuff.
+
 This is a complete walk-through of a small verification task, from start to finish. The program to be verified is a C function that swaps two numbers in memory.
 
 
@@ -107,7 +109,7 @@ The internal representation is a language called :term:`SAWCore`, which consists
 .. index:: symbolic value
 .. index:: concrete value
 
-in which many of the details of pointer arithmetic and memory models have been removed. The conversion process is called *symbolic execution* or *symbolic simulation*. It works by first replacing some of the inputs to a program with *symbolic values*, which are akin to mathematical variables. The term *concrete values* is used to describe honest-to-goodness bits and bytes. As the program runs, operations on symbolic values result in descriptions of operations rather than actual values. Just as adding ``1`` to the concrete value ``5`` yields the concrete value ``6``, adding ``1`` to the symbolic value :math:`x` yields the symbolic value :math:`x+1`. Incrementing the values again yields ``7`` and :math:`x+2`, respectively.
+in which many of the details of pointer arithmetic and memory models have been removed. The conversion process is called *symbolic execution* or *symbolic simulation*. It works by first replacing some of the inputs to a program with *symbolic values*, which are akin to mathematical variables. The term *concrete values* is used to describe honest-to-goodness bits and bytes. As the program runs, operations on symbolic values result in descriptions of operations rather than actual values. Just as adding ``1`` to the concrete value ``5`` yields the concrete value ``6``, adding ``1`` to the symbolic value :math:`x` yields the symbolic value :math:`x+1`. Incrementing the values again yields ``7`` and :math:`x+2`, respectively. The value is not :math:`x+1+1` because symbolic execution engines typically reduce mathematical expressions to simpler equivalent forms in the interest of efficiency.
 
 Take the following function
 
@@ -120,9 +122,9 @@ Take the following function
         return x;
     }
 
-The first step in symbolic execution is to create an unknown ``int``. Variable names don't matter, so here it is called :math:`y`. Mathematical varibles are written in a different font to show that they're different from program variables, but it can also be convenient to use different letters to avoid confusion. Then, the program is run:
+The first step in symbolic execution is to create an unknown ``int``. Variable names don't matter, so here it is called :math:`y`. Mathematical variables are written in a different font to show that they're different from program variables, but it can also be convenient to use different letters to avoid confusion. Then, the program is run:
 
-1. The first step in ``add5`` is to initialize the for loop. Now, ``x`` is :math:`y` and ``i`` is ``0``.
+1. The first step in ``add5`` is to initialize the ``for`` loop. Now, ``x`` is :math:`y` and ``i`` is ``0``.
 
 2. The condition of the ``for`` loop is true, so the body is executed. The program variable ``x`` is incremented by 1. The value of ``x`` is now :math:`y+1`. After the loop body, ``i`` is incremented to ``1``.
 
@@ -184,7 +186,7 @@ Symbolic execution is only typically applicable to programs whose termination do
         return x;
     }
 
-then the number of loop iterations would depend on the symbolic value :math:`y`, rather than on some pre-determined concrete number. This means that, each time through the ``for`` loop, two new branches must be explored: one in which the present concrete value of ``i`` is less than the symbolic value of :math:`y`, and on in which it is not. The number of branches to be explored is too large for the execution to terminate in a reasonable amount of time. In other words: symbolic execution is most applicable to programs that "obviously" terminate, or programs in which the number of loop iterations do not depend on which specific input is provided.
+then the number of loop iterations would depend on the symbolic value :math:`y`, rather than on some pre-determined concrete number. This means that, each time through the ``for`` loop, two new branches must be explored: one in which the present concrete value of ``i`` is less than the symbolic value of :math:`y`, and one in which it is not. The number of branches to be explored is too large for the execution to terminate in a reasonable amount of time. In other words: symbolic execution is most applicable to programs that "obviously" terminate, or programs in which the number of loop iterations do not depend on which specific input is provided.
 
 Most cryptographic primitives fall into the class of programs for which symbolic execution is a good technique. They typically don't have loops in which the number of iterations depends on specific input values, for instance.
 
@@ -230,7 +232,7 @@ Here, the precondition consists of two invocations of ``crucible_fresh_var``, wh
 
 The function is invoked on these symbolic values using the ``crucible_execute_func`` command. C functions like ``swap`` can be provided with arguments that don't necessarily make sense as pure mathematical values, like pointers or arrays. In SAW, mathematical expressions are called *terms*, while this larger collection of values are called *setup values*. The ``crucible_term`` function is used to create a setup value that consists of a :term:`SAWCore` term. In this case, the symbolic integers are :term:`SAWCore` terms, so both arguments are wrapped in ``crucible_term``.
 
-In the postcondition, it makes sense to specify the return value of the function using ``crucible_return``. In this example, the function is expected to return True, which is represented using the syntax ``{{ 1 : [1] }}``. The curly braces allow terms to be written in a language called Cryptol, which plays an important role in writing SAW specifications. The ``1`` before the colon specifies the Boolean true value, and the ``[1]`` after the colon specifies that it's a 1-bit type (namely, ``bool``).
+In the postcondition, the return value of the function can be specified using ``crucible_return``. In this example, the function is expected to return ``true``, which is represented using the syntax ``{{ 1 : [1] }}``. The curly braces allow terms to be written in a language called Cryptol, which plays an important role in writing SAW specifications. The ``1`` before the colon specifies the Boolean true value, and the ``[1]`` after the colon specifies that it's a 1-bit type (namely, ``bool``).
 
 The entire :term:`specification` is wrapped in ``do { ... }``. This operator allows commands to be built from other commands. In SAW, specifications are written as commands to allow a flexible notation for describing pre- and postconditions. The ``let`` at the top level defines the name ``swap_is_ok`` to refer to this command, which is not yet run.
 

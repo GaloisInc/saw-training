@@ -13,7 +13,7 @@ lifecycle.
   single: proof; maintenance
   single: maintenance; proof
 
-:term:`Proof maintenance` is the process of preserving the correspondence between a program, its specification, and its
+:term:`Proof maintenance <proof maintenance>` is the process of preserving the correspondence between a program, its specification, and its
 proof of correctness as requirements change over time. This section poses as an exercise an extended proof-maintenance
 task, adapted from `these changes to the HMAC implementation in Amazon's s2n <https://github.com/awslabs/s2n/commit/e283d76f966828f27002dea7c7c0bd9865fea926>`_.
 The code's file structure has been reorganized slightly, but the code itself is untouched.

@@ -41,7 +41,6 @@ a new field to the ``s2n_hmac_state`` structure as it is defined in
   :language: C
   :start-after: // BEGIN S2N_HMAC_STATE_STRUCT
   :end-before: // END S2N_HMAC_STATE_STRUCT
-  :emphasize-lines: 12
 
 The addition of this new field saw corresponding changes to the implementation
 code, which can be found in :download:`s2n_hmac_new.c </downloads/examples/hmac/s2n_hmac_new.c>`. These changes included memory
@@ -52,7 +51,6 @@ gives a good sense of the types of changes involved:
   :language: C
   :start-after: // BEGIN S2N_TLS_HMAC_INIT
   :end-before: // END S2N_TLS_HMAC_INIT
-  :emphasize-lines: 9,36-37
 
 The complete diff between ``s2n_hmac_old.c`` and ``s2n_hmac_new.c`` shows a
 number of updates similar to that above:

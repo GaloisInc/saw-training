@@ -40,14 +40,14 @@ tutorial, you'll need the following:
 
   SAW
     SAW can be dowloaded from `the SAW web page <https://saw.galois.com/downloads.html>`_.
-  
+
   ABC and Z3
     This tutorial uses `ABC <https://bitbucket.org/alanmi/abc>`_ and
     `Z3 <https://github.com/Z3Prover/z3/releases>`_. If you plan to
     work seriously with SAW, it is also a good idea to install the
     other solvers listed on the `SAW download page
     <https://saw.galois.com/downloads.html>`_.
-  
+
   Cryptol
     Cryptol is included with SAW. Please use the version of Cryptol
     that's included, because each SAW release requires a specific
@@ -66,4 +66,3 @@ directory, run the following commands::
 
 If everything succeeds, you'll be at a Cryptol prompt. Use ``:q`` to
 exit Cryptol.
-    

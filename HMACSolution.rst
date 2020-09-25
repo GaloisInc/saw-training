@@ -16,7 +16,6 @@ that has the appropriate type, like so:
   :language: Cryptol
   :start-after: // BEGIN HMAC_C_STATE
   :end-before: // END HMAC_C_STATE
-  :emphasize-lines: 10
 
 This very clearly corresponds to the change to the ``s2n_hmac_state`` structure
 in the C implementation, other than the specialization to SHA512. In the C
@@ -29,7 +28,6 @@ change:
   :language: Cryptol
   :start-after: // BEGIN HMAC_INIT_C_STATE
   :end-before: // END HMAC_INIT_C_STATE
-  :emphasize-lines: 24,40-42
 
 Take note of how similar these changes are to those in the analogous C code;
 this is true more generally, as can be seen in the complete diff between
@@ -52,7 +50,6 @@ memory layout specifications found through this search looks like this:
   :language: SAWScript
   :start-after: // BEGIN HMAC_MEM_LAYOUT_OLD
   :end-before: // END HMAC_MEM_LAYOUT_OLD
-  :emphasize-lines: 9
 
 Another improvement that can be made to this code is to use the
 ``crucible_field`` primitive instead of ``crucible_elem``, which
@@ -63,7 +60,6 @@ index. This, and the necessary change to memory layout, appear below.
   :language: SAWScript
   :start-after: // BEGIN HMAC_MEM_LAYOUT_NEW
   :end-before: // END HMAC_MEM_LAYOUT_NEW
-  :emphasize-lines: 9
 
 The other change necessary is the aforementioned update to embedded Cryptol
 terms using the ``HMAC_c_state`` type augmented in the previous section. The
@@ -73,7 +69,6 @@ original code found by searching looks like this:
   :language: SAWScript
   :start-after: // BEGIN HMAC_CRYPTOL_OLD
   :end-before: // END HMAC_CRYPTOL_OLD
-  :emphasize-lines: 10
 
 And the update corresponds exactly to the one in the Cryptol specification:
 
@@ -81,7 +76,6 @@ And the update corresponds exactly to the one in the Cryptol specification:
  :language: SAWScript
  :start-after: // BEGIN HMAC_CRYPTOL_NEW
  :end-before: // END HMAC_CRYPTOL_NEW
- :emphasize-lines: 11
 
 The complete set of changes to the SAW specification can be seen in the diff
 between ``HMAC_old.saw`` and ``HMAC_new.saw``:

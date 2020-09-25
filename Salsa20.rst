@@ -177,9 +177,6 @@ two sequences adds their elements. The final result of ``Salsa20`` is
 computed by re-joining the split words into the appropriate-sized
 sequence.
 
-.. DTC: Do we really want to link to something on Medium, given their shady practices? If so, we should at least credit the author rather than the blog hoster. `in this excellent Medium article <https://medium.com/background-thread/what-is-lazy-evaluation-programming-word-of-the-day-8a6f4410053f>`_.
-
-
 The C implementation uses in-place mutation and an explicit loop. Due
 to the use of mutation, it must be careful to copy data that will be
 used again later.
@@ -302,13 +299,12 @@ work that was done to construct a ``CrucibleMethodSpec`` is
 re-used. Specifically, instead of recursively symbolically executing a
 verified function, the prior specification is used as an
 axiomatization of its behavior. In the definition of ``main``, the
-highlighted lines pass the results of earlier verifications along:
+the results of earlier verifications are passed along:
 
 .. literalinclude:: examples/salsa20/salsa20_compositional.saw
   :language: Cryptol
   :start-after: // BEGIN MAIN
   :end-before: // END MAIN
-  :emphasize-lines: 4-11
 
 This example also uses the fourth argument to
 ``crucible_llvm_verify``. During symbolic execution, conditionals

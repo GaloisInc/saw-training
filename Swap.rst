@@ -186,7 +186,7 @@ Symbolic execution is only typically applicable to programs whose termination do
 
 then the number of loop iterations would depend on the symbolic value :math:`y`, rather than on some pre-determined concrete number. This means that, each time through the ``for`` loop, two new branches must be explored: one in which the present concrete value of ``i`` is less than the symbolic value of :math:`y`, and on in which it is not. The number of branches to be explored is too large for the execution to terminate in a reasonable amount of time. In other words: symbolic execution is most applicable to programs that "obviously" terminate, or programs in which the number of loop iterations do not depend on which specific input is provided.
 
-Most cryptographic primitives fall into the class of programs for which symbolic execution is a good technique. They typically don't have loops in which the number of iterations depends on specific input values, for instance. 
+Most cryptographic primitives fall into the class of programs for which symbolic execution is a good technique. They typically don't have loops in which the number of iterations depends on specific input values, for instance.
 
 Running SAW
 -----------
@@ -261,7 +261,7 @@ Exercises: Getting Started with SAW
    is correct for some input. It should have the following prototype:
 
    .. code-block:: C
-  
+
      bool zero_spec(uint32_t x);
 
 3. Use SAW to verify that ``zero_spec`` always returns ``true`` for your implementation of ``zero``.

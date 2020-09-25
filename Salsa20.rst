@@ -20,20 +20,18 @@ the ``examples/salsa20`` directory of :download:`the example code </examples.tar
 Salsa20 Verification Overview
 -----------------------------
 
-Salsa20 is a stream cipher developed in 2005 by Daniel J. Bernstein, built on a
-pseudorandom function utilizing add-rotate-XOR (ARX) operations on 32-bit words
-[#salsa20wiki]_. His original specification can be found
+`Salsa20 <https://en.wikipedia.org/wiki/Salsa20>`_ is a stream cipher developed in 2005 by Daniel J. Bernstein, built on a
+pseudorandom function utilizing add-rotate-XOR (ARX) operations on 32-bit words. The original specification can be found
 `here <http://cr.yp.to/snuffle/spec.pdf>`_.
 
 The specification for this task is a trusted implementation written in
 :term:`Cryptol`. This is analogous to what is covered in :ref:`swap-cryptol` in
 the ``swap`` example, but for a larger system. Some examples from this
-specification are explored below for the sake of showing what large-scale
+specification are explored below for the sake of showing what larger
 Cryptol programs look like.
 
-The implementation to be verified is written in C to closely match the Cryptol
-specification. This implementation is shown in part alongside the specification
-for comparison purposes.
+The implementation to be verified is written in C. This implementation
+is shown in part alongside the specification for comparison purposes.
 
 A SAWScript containing the specifications of memory layouts and orchestration
 of the verification itself ties everything together. This will be covered last,
@@ -133,7 +131,7 @@ multiple bindings in the branch, later bindings are repeated for each
 earlier value. So the value of ``[(x + 1, y - 1) | x <- [1,2], y <-
 [11, 12]]`` is ``[(2, 10), (2, 11), (3, 10), (3, 11)]``. The value of
 a comprehension with multiple branches is found by evaluating each
-branch in parallel. The value of ``[(x + 1, y - 1) | x <- [1,2] | y <-
+branch in parallel; thus, the value of ``[(x + 1, y - 1) | x <- [1,2] | y <-
 [11,12]]`` is ``[(2, 10), (3, 11)]``.
 
 In the ``where`` clause, the definition of ``xw`` can be read as
@@ -203,8 +201,8 @@ either 16 or 32 8-bit bytes. The back-tick operator allows a program
 to inspect the value of a length from a type, which is used in the
 ``if`` expression to select the appropriate input to
 ``Salsa20``. Cryptol strings, like C string literals, represent
-sequences of ASCII byte values. Their values come from the
-specification.
+sequences of ASCII byte values. The specific strings used here come
+from the Salsa20 specification.
 
 .. literalinclude:: examples/salsa20/Salsa20.cry
   :language: Cryptol
@@ -242,7 +240,7 @@ values, while C, an imperative language, tends to write new values to
 a pointer's target. Typically, the C version of the program will
 overwrite an argument with the value that the Cryptol version
 returns. This pattern is abstracted over in ``oneptr_update_func``, a
-SAWScript command that describes this relationship between C and
+SAWScript command that describes this relationship between the C and
 Cryptol versions of a function. The arguments are ``n : String`` that
 names the parameter for pretty-printing, ``ty : LLVMType`` that
 describes the parameter type, and the function ``f : Term`` to apply
@@ -266,7 +264,7 @@ The helper ``pointer_to_fresh`` is the same as the one in
 the given type, returning both the symbolic value and the pointer to
 it. The symbolic values are passed to the Cryptol function
 ``quarterround`` to compute the expected result values. Because the
-function inputs are symbolic, the outputs are also mathematical
+function's inputs are symbolic, the outputs are also mathematical
 expressions that reflect the function's behavior. These expected result
 values are then used as the expected targets of the pointers in the
 post-condition of the SAW specification.
@@ -322,8 +320,10 @@ does not implement it. Also, Salsa20 is verified only with respect to
 some particular message lengths, because SAW is not yet capable of
 verifying infinite programs. This is why ``main`` verifies multiple
 lengths, in the hope that this is sufficient to increase our
-confidence.
+confidence. 
 
+.. DTC TODO: insert a bit about a trade-off here that's similar to
+   that between testing strategies, time spent, and confidence.
 
 Comparing Compositional and Non-compositional Verification
 ----------------------------------------------------------
@@ -370,7 +370,3 @@ perform rot13 on a string with precisely 20 characters in it. Verify
 this using SAW and Cryptol with compositional verification.
 
 
-
-.. rubric:: Footnotes
-
-.. [#salsa20wiki] https://en.wikipedia.org/wiki/Salsa20

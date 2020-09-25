@@ -327,7 +327,7 @@ This approach is much more clever than the straightforward version with an inter
   :start-after: // BEGIN XOR_SWAP_SPEC
   :end-before: // END XOR_SWAP_SPEC
 
-The corresponding :term:`SAWScript` is almost identical to that used for ``swap_spec`` --- only the name of the C function was replaced. This is because it is stating the same kind of propery: for all possible values of the appropriate LLVM integer type, the function in question returns ``true``.
+The corresponding :term:`SAWScript` is almost identical to that used for ``swap_spec`` --- only the name of the C function was replaced. This is because it is stating the same kind of property: for all possible values of the appropriate LLVM integer type, the function in question returns ``true``.
 
 
 Specifications in SAWScript
@@ -340,7 +340,7 @@ Most SAW specifications are not written in C. Instead, they are typically writte
   :start-after: // BEGIN SWAP_SPEC
   :end-before: // END SWAP_SPEC
 
-This specification begins by declaring the symbolic values ``x`` and ``y``, just as before. The next step is to establish a pointer to each symbolic value, because ``swap`` takes pointers as arguments. Establishing a pointer consists of two steps: the first, using ``crucible_alloc``, creates a setup value that represents an abstract pointer to nothing in particular; and the second, using ``crucible_points_to``, asserts that the pointer actually points at the symbolic value. Because the precondition sets up the arguments using ``crucible_alloc`` and ``crucible_points_to``, ``swap`` will be called with non-null pointers. In the postcondition (after the ``crucible_execute_func`` call),  ``crucible_points_to`` is used to assert that the pointers now point at the other value.
+This specification begins by declaring the symbolic values ``x`` and ``y``, just as before. The next step is to establish a pointer to each symbolic value, because ``swap`` takes pointers as arguments. Establishing a pointer consists of two steps: the first, using ``crucible_alloc``, creates a setup value that represents an abstract pointer to allocated memory without saying anything about what's in said memory; and the second, using ``crucible_points_to``, asserts that the allocated memory actually contains the symbolic value. Because the precondition sets up the arguments using ``crucible_alloc`` and ``crucible_points_to``, ``swap`` will be called with non-null pointers. In the postcondition (after the ``crucible_execute_func`` call),  ``crucible_points_to`` is used to assert that the pointers now point at the other value.
 
 Writing a :term:`specification` in :term:`SAWScript` instead of C has a number of advantages:
 
@@ -400,7 +400,7 @@ A Cryptol specification for ``swap`` looks like this:
 .. literalinclude:: examples/swap/Swap.cry
   :language: Cryptol
 
-The first line of the file is a module header. It states that the current module is named ``Swap``. The remainder of the file is a type declaration and a specification. The type declaration reads: "For all types ``a``, ``swap`` maps pairs in which both fields have ``a`` into pairs in which both fields have type ``a``. It is comparable to a signature like ``Pair <A, A> swap<A>(Pair<A, A>)`` in a language like Java. The ``{a}`` introduces the type variable, similarly to the ``<A>`` in the Java signature, and the argument type comes before the ``->``.
+The first line of the file is a module header. It states that the current module is named ``Swap``. The remainder of the file is a type declaration and a specification. The type declaration reads: "For all types ``a``, ``swap`` maps pairs in which both fields have type ``a`` into pairs in which both fields have type ``a``. It is comparable to a signature like ``Pair <A, A> swap<A>(Pair<A, A>)`` in a language like Java. The ``{a}`` introduces the type variable, similarly to the ``<A>`` in the Java signature, and the argument type comes before the ``->``.
 
 The Cryptol definition of ``swap`` uses pattern matching to name the first and second elements of the incoming pair as ``x`` and ``y`` respectively. The right side of the ``=`` specifies the return value as the two elements in opposite positions.
 

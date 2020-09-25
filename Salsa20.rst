@@ -168,7 +168,7 @@ The resulting sequence consists of ``doubleround`` applied :math:`n`
 times to ``xw`` at position :math:`n`. This process could, in
 principle, continue forever. In Cryptol, however, sequences are
 computed lazily, so as long as nothing ever asks for the last element,
-the program will still terminate. 
+the program will still terminate.
 
 The final definition is ``ar``, which adds ``xw`` to the tenth element
 of ``zs``, which is the result of applying ``doubleround`` ten times

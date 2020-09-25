@@ -252,7 +252,7 @@ describes the parameter type, and the function ``f : Term`` to apply
 to the parameter.
 
 .. literalinclude:: examples/salsa20/salsa20_compositional.saw
-  :language: Cryptol
+  :language: SAWScript
   :start-after: // BEGIN ONEPTR_UPDATE
   :end-before: // END ONEPTR_UPDATE
 
@@ -260,7 +260,7 @@ All of Salsa20 depends on ``s20_quarterround``. Here is its
 specification:
 
 .. literalinclude:: examples/salsa20/salsa20_compositional.saw
-  :language: Cryptol
+  :language: SAWScript
   :start-after: // BEGIN QUARTERROUND
   :end-before: // END QUARTERROUND
 
@@ -278,7 +278,7 @@ The specification for ``s20_hash`` is an example of one for which
 ``oneptr_update_func`` is useful.
 
 .. literalinclude:: examples/salsa20/salsa20_compositional.saw
-  :language: Cryptol
+  :language: SAWScript
   :start-after: // BEGIN SALSA20
   :end-before: // END SALSA20
 
@@ -305,7 +305,7 @@ axiomatization of its behavior. In the definition of ``main``, the
 highlighted lines pass the results of earlier verifications along:
 
 .. literalinclude:: examples/salsa20/salsa20_compositional.saw
-  :language: Cryptol
+  :language: SAWScript
   :start-after: // BEGIN MAIN
   :end-before: // END MAIN
   :emphasize-lines: 4-11

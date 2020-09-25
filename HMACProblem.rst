@@ -1,5 +1,5 @@
-Maintaining Proofs: s2n HMAC
-============================
+Proof Maintenance Exercises: s2n HMAC
+=====================================
 
 As mentioned in :ref:`swap-code-evolution`, the evolution of a program
 is accompanied by the evolution of its specifications. A key part of
@@ -24,7 +24,7 @@ the changes to the code and the changes to the specifications.
 
 
 Background: The Updates to the Implementation
-------------------------------------------
+---------------------------------------------
 
 This section provides an overview of the changes to the implementation that
 form the basis of the proof maintenance task to be completed.

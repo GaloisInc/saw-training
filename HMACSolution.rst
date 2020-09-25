@@ -14,7 +14,6 @@ that has the appropriate type, like so:
 
 .. literalinclude:: examples/hmac/HMAC_iterative_new.cry
   :language: Cryptol
-  :caption: The updated definition of ``HMAC_c_state``
   :start-after: // BEGIN HMAC_C_STATE
   :end-before: // END HMAC_C_STATE
   :emphasize-lines: 10
@@ -38,7 +37,6 @@ this is true more generally, as can be seen in the complete diff between
 
 .. literalinclude:: examples/hmac/HMAC_iterative_new.cry
   :language: Cryptol
-  :caption: Changes to the HMAC Cryptol specification
   :diff: examples/hmac/HMAC_iterative_old.cry
 
 
@@ -52,7 +50,6 @@ memory layout specifications found through this search looks like this:
 
 .. literalinclude:: /examples/hmac/HMAC_old.saw
   :language: SAWScript
-  :caption: Example SAWScript memory layout to update
   :start-after: // BEGIN HMAC_MEM_LAYOUT_OLD
   :end-before: // END HMAC_MEM_LAYOUT_OLD
   :emphasize-lines: 9
@@ -64,7 +61,6 @@ index. This, and the necessary change to memory layout, appear below.
 
 .. literalinclude:: /examples/hmac/HMAC_new.saw
   :language: SAWScript
-  :caption: Updated memory layouts including ``outer_just_key``
   :start-after: // BEGIN HMAC_MEM_LAYOUT_NEW
   :end-before: // END HMAC_MEM_LAYOUT_NEW
   :emphasize-lines: 9
@@ -75,7 +71,6 @@ original code found by searching looks like this:
 
 .. literalinclude:: /examples/hmac/HMAC_old.saw
   :language: SAWScript
-  :caption: Example embedded Cryptol to update
   :start-after: // BEGIN HMAC_CRYPTOL_OLD
   :end-before: // END HMAC_CRYPTOL_OLD
   :emphasize-lines: 10
@@ -84,7 +79,6 @@ And the update corresponds exactly to the one in the Cryptol specification:
 
 .. literalinclude:: /examples/hmac/HMAC_new.saw
  :language: SAWScript
- :caption: Updated embedded Cryptol including ``outer_just_key``
  :start-after: // BEGIN HMAC_CRYPTOL_NEW
  :end-before: // END HMAC_CRYPTOL_NEW
  :emphasize-lines: 11
@@ -94,7 +88,6 @@ between ``HMAC_old.saw`` and ``HMAC_new.saw``:
 
 .. literalinclude:: /examples/hmac/HMAC_new.saw
   :language: SAWScript
-  :caption: Changes to the HMAC SAW specification
   :diff: /examples/hmac/HMAC_old.saw
 
 With this, the specifications have been updated to account for the changes to

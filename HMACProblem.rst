@@ -39,7 +39,6 @@ a new field to the ``s2n_hmac_state`` structure as it is defined in
 
 .. literalinclude:: examples/hmac/s2n_hmac_new.h
   :language: C
-  :caption: The updated definition of ``struct s2n_hmac_state``
   :start-after: // BEGIN S2N_HMAC_STATE_STRUCT
   :end-before: // END S2N_HMAC_STATE_STRUCT
   :emphasize-lines: 12
@@ -51,7 +50,6 @@ gives a good sense of the types of changes involved:
 
 .. literalinclude:: examples/hmac/s2n_hmac_new.c
   :language: C
-  :caption: A sample of the changes introduced in the referenced commit
   :start-after: // BEGIN S2N_TLS_HMAC_INIT
   :end-before: // END S2N_TLS_HMAC_INIT
   :emphasize-lines: 9,36-37
@@ -61,7 +59,6 @@ number of updates similar to that above:
 
 .. literalinclude:: examples/hmac/s2n_hmac_new.c
     :language: C
-    :caption: Changes to the s2n HMAC implementation
     :diff: examples/hmac/s2n_hmac_old.c
 
 From these changes alone, the work needed to keep the proofs up-to-date with

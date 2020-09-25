@@ -66,7 +66,6 @@ In the course of writing a program, it's common to test it against some pre-dete
 
 .. literalinclude:: examples/swap/swap.c
   :language: C
-  :caption: Testing with pre-chosen values
   :start-after: // BEGIN SWAP_CHOSEN_VALUE_TEST
   :end-before: // END SWAP_CHOSEN_VALUE_TEST
 

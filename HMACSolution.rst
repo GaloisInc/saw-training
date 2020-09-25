@@ -35,7 +35,7 @@ this is true more generally, as can be seen in the complete diff between
 
 .. literalinclude:: examples/hmac/HMAC_iterative_new.cry
   :language: Cryptol
-  :diff: examples/hmac/HMAC_iterative_old.cry
+  :diff: downloads/examples/hmac/HMAC_iterative_old.cry
 
 
 Updating the SAW Specifications
@@ -82,7 +82,7 @@ between ``HMAC_old.saw`` and ``HMAC_new.saw``:
 
 .. literalinclude:: /examples/hmac/HMAC_new.saw
   :language: SAWScript
-  :diff: /examples/hmac/HMAC_old.saw
+  :diff: downloads/examples/hmac/HMAC_old.saw
 
 With this, the specifications have been updated to account for the changes to
 the implementation, and verification via SAW will go through as intended.

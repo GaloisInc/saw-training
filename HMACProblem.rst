@@ -57,7 +57,7 @@ number of updates similar to that above:
 
 .. literalinclude:: examples/hmac/s2n_hmac_new.c
     :language: C
-    :diff: examples/hmac/s2n_hmac_old.c
+    :diff: downloads/examples/hmac/s2n_hmac_old.c
 
 From these changes alone, the work needed to keep the proofs up-to-date with
 the implementation can be very reasonably estimated. In this case, it will be

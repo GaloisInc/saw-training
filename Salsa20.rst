@@ -14,7 +14,7 @@ performance of a verification script.
 
 This section describes the verification of an implementation of the
 Salsa20 encryption algorithm. Complete example code can be found in
-the ``examples/salsa20`` of :download:`the example code </examples.tar.gz>`.
+the ``examples/salsa20`` directory of :download:`the example code </examples.tar.gz>`.
 
 
 Salsa20 Verification Overview
@@ -203,7 +203,7 @@ either 16 or 32 8-bit bytes. The back-tick operator allows a program
 to inspect the value of a length from a type, which is used in the
 ``if`` expression to select the appropriate input to
 ``Salsa20``. Cryptol strings, like C string literals, represent
-sequences of ASCII bytes values. Their values come from the
+sequences of ASCII byte values. Their values come from the
 specification.
 
 .. literalinclude:: examples/salsa20/Salsa20.cry
@@ -299,7 +299,7 @@ work that was done to construct a ``CrucibleMethodSpec`` is
 re-used. Specifically, instead of recursively symbolically executing a
 verified function, the prior specification is used as an
 axiomatization of its behavior. In the definition of ``main``, the
-the results of earlier verifications are passed along:
+results of earlier verifications are passed along:
 
 .. literalinclude:: examples/salsa20/salsa20_compositional.saw
   :language: Cryptol

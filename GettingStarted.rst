@@ -27,7 +27,7 @@ the file ``main.c`` might contain the function
 
   int main(int argc, char** argv) { ... }
 
-which has an argument called ``argc``. At times, :math:`\mathit{italic text}`
+which has an argument called ``argc``. At times, :math:`\mathit{italic\ text}`
 is used to represent mathematical variables. For instance, when relating programs
 to mathematical specifications, the program variable ``n`` might have the
 mathematical value :math:`x^2`.

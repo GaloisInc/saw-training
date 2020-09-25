@@ -55,7 +55,7 @@ gives a good sense of the types of changes involved:
 The complete diff between ``s2n_hmac_old.c`` and ``s2n_hmac_new.c`` shows a
 number of updates similar to that above:
 
-.. literalinclude:: examples/hmac/s2n_hmac_new.c
+.. literalinclude:: downloads/examples/hmac/s2n_hmac_new.c
     :language: C
     :diff: downloads/examples/hmac/s2n_hmac_old.c
 

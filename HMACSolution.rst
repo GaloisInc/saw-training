@@ -33,7 +33,7 @@ Take note of how similar these changes are to those in the analogous C code;
 this is true more generally, as can be seen in the complete diff between
 ``HMAC_iterative_old.cry`` and ``HMAC_iterative_new.cry``:
 
-.. literalinclude:: examples/hmac/HMAC_iterative_new.cry
+.. literalinclude:: downloads/examples/hmac/HMAC_iterative_new.cry
   :language: Cryptol
   :diff: downloads/examples/hmac/HMAC_iterative_old.cry
 
@@ -80,7 +80,7 @@ And the update corresponds exactly to the one in the Cryptol specification:
 The complete set of changes to the SAW specification can be seen in the diff
 between ``HMAC_old.saw`` and ``HMAC_new.saw``:
 
-.. literalinclude:: /examples/hmac/HMAC_new.saw
+.. literalinclude:: downloads/examples/hmac/HMAC_new.saw
   :language: SAWScript
   :diff: downloads/examples/hmac/HMAC_old.saw
 

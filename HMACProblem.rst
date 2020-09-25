@@ -1,3 +1,5 @@
+.. _hmac-problem:
+
 Proof Maintenance Exercises: s2n HMAC
 =====================================
 

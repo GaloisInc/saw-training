@@ -260,7 +260,7 @@ All of Salsa20 depends on ``s20_quarterround``. Here is its
 specification:
 
 .. literalinclude:: examples/salsa20/salsa20_compositional.saw
-  :language: SAWScript
+  :language: Cryptol
   :start-after: // BEGIN QUARTERROUND
   :end-before: // END QUARTERROUND
 
@@ -305,7 +305,7 @@ axiomatization of its behavior. In the definition of ``main``, the
 highlighted lines pass the results of earlier verifications along:
 
 .. literalinclude:: examples/salsa20/salsa20_compositional.saw
-  :language: SAWScript
+  :language: Cryptol
   :start-after: // BEGIN MAIN
   :end-before: // END MAIN
   :emphasize-lines: 4-11

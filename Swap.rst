@@ -80,9 +80,9 @@ A second approach to testing is to choose many random values at each execution, 
   :end-before: // END SWAP_RANDOM_VALUE_TEST
 
 
-Finally, it is possible to exhaustively check the values by enumerating and testing all possible combinations. With In the case of two 32-bit integers, this will take longer than the usual human lifespan, so it is not particularly practical for ongoing software development.
+Finally, it is possible to exhaustively check the values by enumerating and testing all possible combinations. In the case of two 32-bit integers, this will take longer than the usual human lifespan, so it is not particularly practical for ongoing software development.
 
-Formal verification is a useful supplement to testing. Like exhaustive testing, verification tools provide full coverage of all inputs, but they need not actually run each case. This is accomplished by reasoning about mathematical models of a program, knocking out huge regions of the state space with single steps. There are many tools and techniques for performing full formal verification, each suitable to different classes of problem. SAW is particularly suited to imperative programs that don't contain potentially-unbounded loops. Verification does tend to be significantly more expensive to implement than systematic testing, both because it requires specialized knowledge and because developing mathematical proofs can take much longer that writing test cases. However, for many programs, automated tools like SAW can be used with similar levels of effort to testing, but resulting in much stronger guarantees. At the same time, checking a proof can sometimes be much faster than testing large parts of the input space, leading to quicker feedback during development.
+Formal verification is a useful supplement to testing. Like exhaustive testing, verification tools provide full coverage of all inputs, but they need not actually run each case. This is accomplished by reasoning about mathematical models of a program, knocking out huge regions of the state space with single steps. There are many tools and techniques for performing full formal verification, each suitable to different classes of problem. SAW is particularly suited to imperative programs that don't contain potentially-unbounded loops. Verification does tend to be significantly more expensive to implement than systematic testing, both because it requires specialized knowledge and because developing mathematical proofs can take much longer than writing test cases. However, for many programs, automated tools like SAW can be used with similar levels of effort to testing, but resulting in much stronger guarantees. At the same time, checking a proof can sometimes be much faster than testing large parts of the input space, leading to quicker feedback during development.
 
 SAW works in two phases: first, it converts its target program to an internal representation that's more amenable to verification. Then, external solvers are used together with occasional manual guidance to construct proofs.
 
@@ -238,7 +238,7 @@ Translated to English, ``swap_is_ok`` says:
 
     Let :math:`x` and :math:`y` be 32-bit integers. The result of calling ``swap_spec`` on them is ``true``.
 
-After verification, we know that this is the case *no matter which integers* :math:`x` and :math:`y` are.
+After verification, we know that this is the case *no matter which integers* :math:`x` *and* :math:`y` *are*.
 
 In other words, ``swap_is_ok`` wraps the C specification ``swap_spec``. The C specification takes care of making sure that the pointer arguments to ``swap`` are non-null, and it checks that the pointers have exchanged targets after calling ``swap``. The SAW wrapper establishes the symbolic values, and ensures that the return value is ``true``.
 

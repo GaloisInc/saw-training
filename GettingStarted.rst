@@ -41,8 +41,8 @@ tutorial, you'll need the following:
   SAW
     SAW can be dowloaded from `the SAW web page <https://saw.galois.com/downloads.html>`_.
 
-  ABC, Yices, and Z3
-    This tutorial uses `ABC <https://github.com/berkeley-abc/abc>`_,
+  Yices and Z3
+    This tutorial uses
     `Yices <https://yices.csl.sri.com/>`_ and
     `Z3 <https://github.com/Z3Prover/z3/releases>`_. If you plan to
     work seriously with SAW, it is also a good idea to install the

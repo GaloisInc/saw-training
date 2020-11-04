@@ -12,7 +12,8 @@ Background
 This tutorial is written for programmers who know C, but who do not
 necessarily have any experience with formal verification. Deep
 knowledge of C is not required, but familiarity with pointers and the
-concept of undefined behavior are assumed. It is not necessary to be
+concept of `undefined behavior <https://en.wikipedia.org/wiki/Undefined_behavior>`_ 
+are assumed. It is not necessary to be
 able to identify undefined behavior on sight.
 
 
@@ -67,3 +68,24 @@ directory, run the following commands::
 
 If everything succeeds, you'll be at a Cryptol prompt. Use ``:q`` to
 exit Cryptol.
+
+Troubleshooting / Installation alternatives
+-------------------------------------------
+
+If things don't succeed, the most likely cause is that you have a
+newly-released version of LLVM.  SAW is dependent on LLVM's
+`bitcode format<https://www.llvm.org/docs/BitCodeFormat.html>`, 
+which often change between releases.  If you get an error
+along these lines:
+
+.. code-block::
+
+   Are you sure you're using a supported version of LLVM/Clang?
+   Check here: https://github.com/GaloisInc/llvm-pretty-bc-parser
+
+you have a couple options:
+  * install an earlier version of ``clang`` and configure your platform's 
+    ``PATH`` to use it instead of the current version, or
+  * use docker or vagrant to run ``saw`` and its tools in a virtual machine.
+    The SAW VM configurations include known-good versions of all of SAW's
+    dependencies.

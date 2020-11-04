@@ -3,19 +3,19 @@
 First Example: Swapping Two Numbers
 ===================================
 
-The more of human life that occurs online, the more important it is that we can trust our computers. Bugs in software have led to `death and serious injury <https://en.wikipedia.org/wiki/Therac-25>`_, `public embarassment and economic damage <https://en.wikipedia.org/wiki/Heartbleed>`_, and other serious consequences. Repeated experience has shown that careful reading of code is not enough to prevent serious bugs.
+Most developers are used to techniques like testing, continuous integration, and thoughtful documentation that can help prevent mistakes from being introduced into a system during its development and evolution. These techniques can be relatively effective, but they risk missing certain classes of bugs. For the most important systems, like those that protect human life or information security, it can make sense to also use formal *verification*, in which a program is mathematically proved to be correct for *all* inputs.
 
-Most developers are used to techniques like testing, continuous integration, and thoughtful documentation that can help prevent mistakes from being introduced into a system during its development. These techniques are relatively inexpensive, but they risk missing certain classes of bugs. For the most important systems, like those that protect human life or information security, it can make sense to use full *verification*, in which a program is mathematically proved to be correct.
+What testing does is take the *actual binary executable* and run it on a *subset of inputs* to check for expected outputs. After you've done testing, what you're worried about is that your tests are missing some critical case. Compared to testing, what we do in verification is build a *model of the software* and *prove properties* of that model for *all possible inputs*. When you use verification, what you're worried about is that your model is inaccurate. Fortunately these techniques complement each other: testing can help validate that your model is accurate and verification can help build confidence that you aren't missing uncommon inputs that trigger misbehavior. In combination, testing and verification can build confidence in the *trustworthiness* of a program.
 
-.. DTC: This phrasing is slightly awkward. It'll work for now, but it'd be nice to get rid of the "this is" stuff.
+.. This is a complete walk-through of a small verification task, from start to finish. The program to be verified is a C function that swaps two numbers in memory.
 
-This is a complete walk-through of a small verification task, from start to finish. The program to be verified is a C function that swaps two numbers in memory.
+In this lesson you'll learn how to use ``SAW`` to build models of functions written in ``C``. You'll learn how to specify what those functions are *supposed* to do, and how to write a *SAWScript* that orchestrates the proof that the functions meet their specifications for all possible inputs.
 
 
 The Code
 --------
 
-The program to be verified is ``swap``, below:
+The first program to be verified is ``swap``, below:
 
 .. literalinclude:: examples/swap/swap.c
   :language: C
@@ -24,42 +24,21 @@ The program to be verified is ``swap``, below:
 
 .. index:: specification
 
-``swap`` is correct if, after calling it, the new target of the first pointer is the former target of the second pointer, and the new target of the second pointer is the former target of the first pointer. The implementer of ``swap`` gets to assume that the pointers are not null, and that they point at initialized memory. This description is called a *specification*. A :term:`specification` can be written in a number of formats, including English sentences, but also in machine-readable forms. The advantage of machine-readable specifications is that they can be used as part of an automated workflow.
+Our English specification for ``swap`` is that after calling it, the new target of the first pointer is the former target of the second pointer, and the new target of the second pointer is the former target of the first pointer. The implementer of ``swap`` gets to assume that the pointers are not null, and that they point at initialized memory. This description is called a *specification*. A :term:`specification` can be written in a number of formats, including English sentences, but also in machine-readable forms. The advantage of machine-readable specifications is that they can be used as part of an automated workflow.
 
-An example machine-readable specification for ``swap`` is ``swap_spec``:
+An example machine-readable specification, written in ``C``, for ``swap`` is ``swap_spec``:
 
 .. literalinclude:: examples/swap/swap.c
   :language: C
   :start-after: // BEGIN SWAP_SPEC
   :end-before: // END SWAP_SPEC
 
-This specification is written in C. It can be used in a number of ways to produce evidence that ``swap`` is correct. Too keep things concrete, here are three broken versions of ``swap``.
-
-The first incorrect ``swap`` doesn't actually swap its arguments.
-
-.. literalinclude:: examples/swap/swap.c
-  :language: C
-  :start-after: // BEGIN SWAP_BROKEN1
-  :end-before: // END SWAP_BROKEN1
-
-The second incorrect ``swap`` works correctly for most numbers, but not when its first argument is 4142351.
-
-.. literalinclude:: examples/swap/swap.c
-  :language: C
-  :start-after: // BEGIN SWAP_BROKEN2
-  :end-before: // END SWAP_BROKEN2
-
-The third incorrect ``swap`` dereferences a null pointer when its first argument is :math:`2^5` times its second.
-
-.. literalinclude:: examples/swap/swap.c
-  :language: C
-  :start-after: // BEGIN SWAP_BROKEN3
-  :end-before: // END SWAP_BROKEN3
+This specification is a ``C`` function that calls ``swap`` on two provided values and checks that the values are indeed swapped. If they are, it returns ``True``, and if not it returns ``False``. This specification can be used in a number of ways to produce evidence that ``swap`` is correct. 
 
 Exercise: A Broken Swap
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Try to come up with a buggy variant of ``swap`` that seems like a mistake that could be made by accident. Add it to ``swap.c`` in the ``examples`` directory.
+Write a buggy variant of ``swap`` that seems like a mistake that could be made by accident. Write another buggy variant of ``swap`` that misbehaves in a way that you think might be difficult to detect. Add them both to ``swap.c`` in the ``examples`` directory.
 
 Testing Programs
 ~~~~~~~~~~~~~~~~
@@ -71,10 +50,10 @@ In the course of writing a program, it's common to test it against some pre-dete
   :start-after: // BEGIN SWAP_CHOSEN_VALUE_TEST
   :end-before: // END SWAP_CHOSEN_VALUE_TEST
 
-There are some downsides to testing only with chosen values, however. First off, these tests are usually selected by the author of the code, and there is a risk that important values are not tested. This can be ameliorated by a systematic, disciplined approach to choosing test values, but it can never be completely eliminated. This particular test case is likely to catch ``swap_broken1``, but not the other two.
+There are some downsides to testing only with chosen values, however. First off, these tests are usually selected by the initial author of the code, and there is a risk that important values are not tested, especially as code evolves. This risk can be reduced by a systematic, disciplined approach to choosing test values, but it can never be completely eliminated. This particular test case is likely to catch completely buggy versions of ``swap``, but not subtle or tricky ones.
 
 
-A second approach to testing is to choose many random values at each execution, as in ``random_value_test``. This approach will eventually find mistakes, but it may not do so in a reasonable amount of time for cases like ``swap_broken2``.
+A second approach to testing is to choose many random values at each execution, as in ``random_value_test``. This approach will eventually find subtle or tricky mistakes, but it may not do so in a reasonable amount of time.
 
 .. literalinclude:: examples/swap/swap.c
   :language: C
@@ -82,120 +61,24 @@ A second approach to testing is to choose many random values at each execution, 
   :end-before: // END SWAP_RANDOM_VALUE_TEST
 
 
-Finally, it is possible to exhaustively check the values by enumerating and testing all possible combinations. In the case of two 32-bit integers, this will take longer than the usual human lifespan, so it is not particularly practical for ongoing software development.
+Finally, one could attempt to exhaustively check the values by enumerating and testing *all possible* combinations. However, even in the simple case of ``swap``, which only takes two 32-bit integers (resulting in :math:`2^{64}` unique cases), this will take longer than the usual human lifespan, so this technique is not practical for ongoing software development.
 
-Formal verification is a useful supplement to testing. Like exhaustive testing, verification tools provide full coverage of all inputs, but they need not actually run each case. This is accomplished by reasoning about mathematical models of a program, knocking out huge regions of the state space with single steps. There are many tools and techniques for performing full formal verification, each suitable to different classes of problem. SAW is particularly suited to imperative programs that don't contain potentially-unbounded loops. Verification does tend to be significantly more expensive to implement than systematic testing, both because it requires specialized knowledge and because developing mathematical proofs can take much longer than writing test cases. However, for many programs, automated tools like SAW can be used with similar levels of effort to testing, but resulting in much stronger guarantees. At the same time, checking a proof can sometimes be much faster than testing large parts of the input space, leading to quicker feedback during development.
+The way formal verification addresses this is by reasoning about *mathematical models* of a program, which allows it to eliminate huge regions of the state space with single steps. There are many tools and techniques for performing full formal verification, each suitable to different classes of problem. SAW is particularly suited to imperative programs that don't contain potentially-unbounded loops. In general, the cost of verification is that it requires specialized knowledge and developing mathematical proofs can take much longer than writing test cases. However, for many programs, automated tools like SAW can be used with similar levels of effort to testing, but resulting in much stronger guarantees. At the same time, re-checking a proof can sometimes be *much faster* than testing large parts of the input space, leading to quicker feedback during development.
 
-SAW works in two phases: first, it converts its target program to an internal representation that's more amenable to verification. Then, external solvers are used together with occasional manual guidance to construct proofs.
-
-
-Exercise: Testing Your Broken Swap
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Try to discover the defects in your own broken version of ``swap`` using manual and random testing. How well did each testing technique solve this particular problem?
-
-Symbolic Execution
-------------------
-
-.. index:: SAWCore
-
-The internal representation is a language called :term:`SAWCore`, which consists of mathematical functions. For instance, ``swap`` might be converted to a function like:
-
-.. math::
-
-    f(x) = (\mathit{second}(x), \mathit{first}(x))
-
-.. index:: symbolic execution
-.. index:: symbolic value
-.. index:: concrete value
-
-in which many of the details of pointer arithmetic and memory models have been removed. The conversion process is called *symbolic execution* or *symbolic simulation*. It works by first replacing some of the inputs to a program with *symbolic values*, which are akin to mathematical variables. The term *concrete values* is used to describe honest-to-goodness bits and bytes. As the program runs, operations on symbolic values result in descriptions of operations rather than actual values. Just as adding ``1`` to the concrete value ``5`` yields the concrete value ``6``, adding ``1`` to the symbolic value :math:`x` yields the symbolic value :math:`x+1`. Incrementing the values again yields ``7`` and :math:`x+2`, respectively. The value is not :math:`x+1+1` because symbolic execution engines typically reduce mathematical expressions to simpler equivalent forms in the interest of efficiency.
-
-Take the following function
-
-.. code-block:: C
-
-    int add5(int x) {
-        for (int i = 0; i < 5; i++) {
-            x = x + 1;
-        }
-        return x;
-    }
-
-The first step in symbolic execution is to create an unknown ``int``. Variable names don't matter, so here it is called :math:`y`. Mathematical variables are written in a different font to show that they're different from program variables, but it can also be convenient to use different letters to avoid confusion. Then, the program is run:
-
-1. The first step in ``add5`` is to initialize the ``for`` loop. Now, ``x`` is :math:`y` and ``i`` is ``0``.
-
-2. The condition of the ``for`` loop is true, so the body is executed. The program variable ``x`` is incremented by 1. The value of ``x`` is now :math:`y+1`. After the loop body, ``i`` is incremented to ``1``.
-
-3. The condition of the ``for`` loop is again true, so the body is executed again. The program variable ``x`` is incremented by 1. The value of ``x`` is now :math:`y+2`, and ``i`` is incremented to ``2``.
-
-4. These steps are repeated until the ``for`` loop's condition fails because ``i`` is ``5``. At this point, ``x`` is the symbolic value :math:`y + 5`.
-
-5. After the loop, the function returns the value :math:`y+5`.
-
-When provided with the symbolic input :math:`y`, ``add5`` returns the symbolic output :math:`y + 5`. This means that it is equivalent to the mathematical function:
-
-.. math::
-
-    f(y) = y + 5
+SAW works in two phases: first it builds a model of the program from the output of ``clang``. Then it uses external solvers and manual guidance to construct a proof that the model meets the specification, or to provide a concrete set of inputs that shows where they differ.
 
 
-When branching on a symbolic value, both paths must be explored. During this exploration, the reason for the branch must also be remembered, and the branches are combined after the exploration. Take, for example:
+Exercise: Detecting Broken ``swap``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code-block:: C
-
-    int abs(int x) {
-        if (x >= 0) {
-            return x;
-        } else {
-            return (-1) * x;
-        }
-    }
-
-To symbolically execute it, begin again with ``x`` set to a symbolic int :math:`y`:
-
-1. The first step is to evaluate the expression ``x >= 0``. Because ``x`` is :math:`y`, the result is a new symbolic value :math:`y \geq 0`.
-
-2. The next step is a branch on this value. Because there's no way to know whether :math:`y \geq 0` is true or false, both must be explored.
-
-3. Start with the true case. Here, the interpreter remembers that :math:`y \geq 0` is true, and returns :math:`y`.
-
-4. Next, explore the false case. The interpreter remembers that :math:`y \geq 0` is false, and returns :math:`-y`.
-
-5. Both branches now need to be combined, so the return value represents both cases. The combined symbolic value is an expression that checks whether :math:`y \geq 0`, just as the value of adding ``1`` to :math:`y` is :math:`y+1`.
-
-The resulting function is:
-
-.. math::
-
-  f(x) =
-    \begin{cases}
-      x & \text{if $x \geq 0$}\\
-      -x & \text{if $x < 0$}
-    \end{cases}
-
-Symbolic execution is only typically applicable to programs whose termination doesn't depend on symbolic values. If addition were implemented as:
-
-.. code-block:: C
-
-    unsigned int add(unsigned int x, unsigned int y) {
-        for (unsigned int i = 0; i < y; i ++) {
-            x++;
-        }
-        return x;
-    }
-
-then the number of loop iterations would depend on the symbolic value :math:`y`, rather than on some pre-determined concrete number. This means that, each time through the ``for`` loop, two new branches must be explored: one in which the present concrete value of ``i`` is less than the symbolic value of :math:`y`, and one in which it is not. The number of branches to be explored is too large for the execution to terminate in a reasonable amount of time. In other words: symbolic execution is most applicable to programs that "obviously" terminate, or programs in which the number of loop iterations do not depend on which specific input is provided.
-
-Most cryptographic primitives fall into the class of programs for which symbolic execution is a good technique. They typically don't have loops in which the number of iterations depends on specific input values, for instance.
+Consider testing-based approaches that are likely to catch the above bugs. Implement them if you'd like. Think about tricky bugs that would thwart those approaches. How confident are you that traditional testing could catch *all* buggy versions of ``swap``? Could you write a test that would catch all possible broken versions of swap, including those written by someone with access to your tests? Roughly how long would it take to run?
 
 Running SAW
 -----------
 
-SAW is a tool for extracting functions that model programs, and then applying both automatic and manual reasoning to them. Typically, they will be compared against a :term:`specification` of some kind. SAW uses a framework called Crucible to symbolically execute imperative programs, while it uses custom simulators for other languages. Crucible is an extensible framework --- it is capable of symbolically executing LLVM IR, JVM bytecode, x86 machine code, Rust's MIR internal representation, and a number of others.
+SAW is a tool for extracting models from compiled programs and then applying both automatic and manual reasoning to compare them against a :term:`specification` of some kind. SAW builds models of programs by *symbolically executing* them, and is capable of building models from LLVM bitcode, JVM bytecode, x86 machine code, Rust's MIR internal representation, and a number of other formats.
 
-The first step to using SAW on ``swap`` is to construct its representation in LLVM IR. It is important to pass ``clang`` the ``-O1`` flag, because important symbols are stripped at higher optimization levels, while lower optimization levels yield code that is less amenable to symbolic execution. It can be convenient to include this in a ``Makefile``:
+The first step to using SAW on ``swap`` is to use ``clang`` to construct its representation in LLVM bitcode. It is important to pass ``clang`` the ``-O1`` flag, because important symbols are stripped at higher optimization levels, while lower optimization levels yield code that is less amenable to symbolic execution. It can be convenient to include this rule in a ``Makefile``:
 
 .. literalinclude:: examples/swap/Makefile
   :language: make
@@ -204,7 +87,7 @@ The first step to using SAW on ``swap`` is to construct its representation in LL
 
 .. index:: SAWScript
 
-After building the LLVM bitcode file, the next step is to use SAW to verify that the program meets its :term:`specification`. SAW is controlled using a special-purpose configuration language called :term:`SAWScript`. SAWScript contains commands for loading code artifacts, for describing program specifications, for comparing code artifacts to specifications, and for helping SAW in situations when fully automatic proofs are impossible.
+After building the LLVM bitcode file (by typing ``make swap.bc``), the next step is to use SAW to verify that the program meets its :term:`specification`. SAW is controlled using a special-purpose configuration language called :term:`SAWScript`. SAWScript contains commands for loading code artifacts, for describing program specifications, for comparing code artifacts to specifications, and for helping SAW in situations when fully automatic proofs are impossible.
 
 The SAWScript to verify ``swap`` is:
 
@@ -212,27 +95,29 @@ The SAWScript to verify ``swap`` is:
   :language: SAWScript
   :linenos:
 
-There are three steps in this verification task:
+There are three parts to this SAWScript:
 
-1. Line 1 loads the LLVM module to be verified.
-2. Lines 3--8 describe a specification to compare the program against.
-3. Line 10 instructs SAW to compare a specific function from the LLVM module to the specification.
+1. Lines 1--2 load helper functions and the LLVM module to be verified. This step builds the model from your code.
+2. Lines 4--9 set up the symbolic inputs to the ``swap_spec`` function, calls the function on those symbolic inputs and asserts that the return value is ``1`` (True).
+3. Line 11 instructs SAW to verify that ``swap_is_ok`` is true for *all possible* input values.
 
-The LLVM module is loaded using the ``llvm_load_module`` command. This command takes a string that contains the filename as an argument, and results in the module itself. In SAWScript, the results of a command are saved using the ``<-`` operator; here, the name ``swapmod`` is made to refer to the module.
+The LLVM module is loaded using the ``llvm_load_module`` command. This command takes a string that contains the filename as an argument, and returns the module itself. In SAWScript, the results of a command are saved using the ``<-`` operator; here, the name ``swapmod`` is made to refer to the module.
+   
+.. index:: precondition
 
-The program specification can be divided into three main components: a precondition, a description of the arguments, and a postcondition. The precondition describes assumptions made in a specification, and it consists of all the commands before ``crucible_execute_func``. The argument description is the call to ``crucible_execute_func`` --- it specifies the arguments that the function will be called with. Finally, the postcondition describes what should be true after the function has been called. In general, the postcondition can describe facts about pointers and memory layout, but here, it describes only the return value.
-
-.. note::
-
-    SAW is a general-purpose framework for combining a number of simulation tools, proof tools, and solvers. Crucible is an extensible symbolic execution framework that serves as the basis for SAW's LLVM support.
-
-Here, the precondition consists of two invocations of ``crucible_fresh_var``, which creates symbolic variables. Internally, these symbolic variables are represented in the internal language :term:`SAWCore`. ``crucible_fresh_var`` takes two arguments: a string, which is a user-chosen name that might show up in error messages, and the type for the symbolic variable. After the precondition, the :term:`SAWScript` variables ``x`` and ``y`` are bound to the respective symbolic values :math:`x` and :math:`y`.
+Here, the precondition consists of creating two symbolic variables. Internally, these symbolic variables are represented in the internal language :term:`SAWCore`. ``variable`` takes three arguments: the type for the symbolic variable, the name for the symbolic variable, a string, which can show up in error messages, and whether the variable is ``FRESH`` (uninitialized) or ``STALE`` (a known value). After the precondition, the :term:`SAWScript` variables ``x`` and ``y`` are bound to the respective symbolic values :math:`x` and :math:`y`.
 
 .. index:: term
 
-The function is invoked on these symbolic values using the ``crucible_execute_func`` command. C functions like ``swap`` can be provided with arguments that don't necessarily make sense as pure mathematical values, like pointers or arrays. In SAW, mathematical expressions are called *terms*, while this larger collection of values are called *setup values*. The ``crucible_term`` function is used to create a setup value that consists of a :term:`SAWCore` term. In this case, the symbolic integers are :term:`SAWCore` terms, so both arguments are wrapped in ``crucible_term``.
+The function is invoked on these symbolic values using the ``execute`` command. C functions like ``swap`` can be provided with arguments that don't necessarily make sense as pure mathematical values, like pointers or arrays. In SAW, mathematical expressions are called *terms*, while the larger collection of values are called *setup values*. In this case, the ``x`` and ``y`` terms have components that represent their symbolic values, which is why we pass ``x.s`` and ``y.s`` to ``execute``.
 
-In the postcondition, the return value of the function can be specified using ``crucible_return``. In this example, the function is expected to return ``true``, which is represented using the syntax ``{{ 1 : [1] }}``. The curly braces allow terms to be written in a language called Cryptol, which plays an important role in writing SAW specifications. The ``1`` before the colon specifies the Boolean true value, and the ``[1]`` after the colon specifies that it's a 1-bit type (namely, ``bool``).
+.. note::
+
+   TODO (DJM): please check the last sentence of the previous paragraph for accurate use of terms. Also, I switched from the crucible_... functions to the ones provided by saw-demo / llvm-utils.saw - but I don't know why the things it returns include the fields ``.p``, ``.s`` and ``.t`` - could we write a simpler wrapper that unwraps the ``.s`` for us?
+
+.. index:: postcondition
+
+In the postcondition, the expected return value of the function can be specified using ``returns``. In this example, the function is expected to return ``true``, which is represented using the syntax ``{{ 1 : [1] }}``. The curly braces allow terms to be written in a language called Cryptol, which plays an important role in writing SAW specifications. The ``1`` before the colon specifies the Boolean true value, and the ``[1]`` after the colon specifies that it's a 1-bit type (namely, ``bool``).
 
 The entire :term:`specification` is wrapped in ``do { ... }``. This operator allows commands to be built from other commands. In SAW, specifications are written as commands to allow a flexible notation for describing pre- and postconditions. The ``let`` at the top level defines the name ``swap_is_ok`` to refer to this command, which is not yet run.
 
@@ -240,7 +125,7 @@ Translated to English, ``swap_is_ok`` says:
 
     Let :math:`x` and :math:`y` be 32-bit integers. The result of calling ``swap_spec`` on them is ``true``.
 
-After verification, we know that this is the case *no matter which integers* :math:`x` *and* :math:`y` *are*.
+If verification reports success, we know that this is the case *for all possible values of* :math:`x` *and* :math:`y`.
 
 In other words, ``swap_is_ok`` wraps the C specification ``swap_spec``. The C specification takes care of making sure that the pointer arguments to ``swap`` are non-null, and it checks that the pointers have exchanged targets after calling ``swap``. The SAW wrapper establishes the symbolic values, and ensures that the return value is ``true``.
 
@@ -248,7 +133,7 @@ In other words, ``swap_is_ok`` wraps the C specification ``swap_spec``. The C sp
 
     :term:`SAWScript` distinguishes between defining a name and saving the result of a command. Use ``let`` to define a name, which may refer to a command or a value, and ``<-`` to run a command and save the result under the given name.
 
-Finally, on line 10, the ``crucible_llvm_verify`` command is used to instruct SAW to carry out verification. The important arguments are ``swapmod``, which specifies the LLVM module that contains the code to be verified; ``"swap_spec"``, the function to be symbolically executed; ``swap_is_ok``, the SAW specification to check ``"swap_spec"`` against; and ``abc``, the name of the solver that will check whether the program satisfies the specification. The other two arguments control the use of helpers and certain details of symbolic execution, and are described :ref:`later in this tutorial<compositional-verification>`. This verification script provides the same level of assurance that exhaustive testing would provide, but it completes in a tiny fraction of the time, fast enough to be part of a standard CI workflow.
+Finally, on line 11, the ``crucible_llvm_verify`` command is used to instruct SAW to carry out verification. The important arguments are ``swapmod``, which specifies the LLVM module that contains the code to be verified; ``"swap_spec"``, the function to be symbolically executed; ``swap_is_ok``, and the SAW specification to check ``"swap_spec"`` against. The empty list (``[]``) is an optional list of previously proven statements, which is used in larger verification projects as described :ref:`later in this tutorial<compositional-verification>`. This verification script provides the same level of assurance that exhaustive testing would provide, but it completes in a tiny fraction of the time, fast enough to be part of a standard CI workflow.
 
 Exercises: Getting Started with SAW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -273,6 +158,11 @@ Verification Failures
 ---------------------
 
 Not all programs fulfill their :term:`specification`. Sometimes, the specification itself is buggy --- it may refer to earlier versions of standards, contain typos, or just not mean what its authors think it means. Other times, programs can contain bugs. Just as testing failures can provide insight into problems and programs, verification failures can enhance programmers' understanding and help find bugs.
+
+.. note::
+
+   TODO: refer to exercise 1 results, or provide a tricky-broken swap here
+
 
 Using a similar :term:`SAWScript` file to attempt to verify ``swap_broken1`` (which simply doesn't swap the inputs) yields the following output in less than half a second::
 
@@ -339,6 +229,10 @@ Most SAW specifications are not written in C. Instead, they are typically writte
   :language: SAWScript
   :start-after: // BEGIN SWAP_SPEC
   :end-before: // END SWAP_SPEC
+
+.. note::
+   TODO: update this section to use helper - no crucible_ functions, i32, pointer_to_fresh, etc. (eep - is that in helper?)
+
 
 This specification begins by declaring the symbolic values ``x`` and ``y``, just as before. The next step is to establish a pointer to each symbolic value, because ``swap`` takes pointers as arguments. Establishing a pointer consists of two steps: the first, using ``crucible_alloc``, creates a setup value that represents an abstract pointer to allocated memory without saying anything about what's in said memory; and the second, using ``crucible_points_to``, asserts that the allocated memory actually contains the symbolic value. Because the precondition sets up the arguments using ``crucible_alloc`` and ``crucible_points_to``, ``swap`` will be called with non-null pointers. In the postcondition (after the ``crucible_execute_func`` call),  ``crucible_points_to`` is used to assert that the pointers now point at the other value.
 

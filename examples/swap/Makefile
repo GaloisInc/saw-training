@@ -1,7 +1,9 @@
 
 # Build commands for swap
-swap.bc: swap.c
-	clang -g -O1 -c -emit-llvm swap.c -o swap.bc
+.SUFFIXES: .c .bc
+
+%.bc : %.c
+	clang -g -O1 -c -emit-llvm $< -o $@
 # End build commands for swap
 
 swap: swap.c

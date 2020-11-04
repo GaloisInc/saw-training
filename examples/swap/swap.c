@@ -1,11 +1,12 @@
+#include <stdlib.h>
+#include <time.h>
 #include <assert.h>
+
+// BEGIN SWAP
 #include <stdint.h>
 #include <stdio.h>
 #include <stdbool.h>
-#include <stdlib.h>
-#include <time.h>
 
-// BEGIN SWAP
 void swap(uint32_t *x, uint32_t *y) {
     uint32_t tmp = *x;
     *x = *y;

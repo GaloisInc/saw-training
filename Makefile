@@ -22,6 +22,6 @@ example-output:
 %: Makefile
 	rm -rf downloads
 	rm -f examples.tar.gz
-	python build_examples.py
+	python3 build_examples.py
 	tar czf examples.tar.gz -C downloads examples
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)

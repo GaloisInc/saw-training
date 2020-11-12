@@ -87,5 +87,5 @@ you have a couple options:
   * install an earlier version of ``clang`` and configure your platform's 
     ``PATH`` to use it instead of the current version, or
   * use docker or vagrant to run ``saw`` and its tools in a virtual machine.
-    The SAW VM configurations include known-good versions of all of SAW's
+    The SAW VM configurations for docker and vagrant include known-good versions of all of SAW's
     dependencies.

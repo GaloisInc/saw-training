@@ -1,0 +1,22 @@
+include "helpers.saw";
+import "Popcount.cry";
+
+popmod <- llvm_load_module "popcount.bc";
+
+let pop_is_ok = do {
+     x <- symbolic_variable uint32_t "x";
+     execute [x];
+     returns ( TRUE );
+};
+
+let pop_cryptol_check = do {
+     x <- symbolic_setup_term uint32_t "x";
+     execute [x.s];
+     let t = x.t;
+     returns ( from_cryptol {{ popCount t }} );
+
+};
+
+llvm_verify popmod "pop_spec" [] pop_is_ok;
+llvm_verify popmod "pop_sparse" [] pop_cryptol_check;
+

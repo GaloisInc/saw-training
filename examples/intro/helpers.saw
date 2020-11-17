@@ -1,0 +1,82 @@
+// Sawscript utility definitions, inspired by @weaversa's 
+// https://github.com/GaloisInc/saw-demos/blob/master/common/llvm.saw
+
+let prover=abc;
+
+// This function called within a specification will cause llvm_verify
+// to error and, most importantly, provide a handy backtrace.
+let error = do {
+  crucible_precond {{ True }};
+  crucible_postcond {{ True }};
+  return {{ True }};
+};
+
+// This function is useful in the opposite case of an `if` statement
+// with an `error`.
+let noerror = do {
+  return {{ True }};
+};
+
+// Remove 'crucible' from common commands
+let points_to = crucible_points_to;
+let precond = crucible_precond;
+let from_cryptol = crucible_term;
+
+let global = crucible_global;
+let global_alloc = crucible_alloc_global;
+let global_init name = do {
+  global_alloc name;
+  points_to (global name)
+            (crucible_global_initializer name);
+};
+let NULL = crucible_null;
+let element = crucible_elem;
+let equal = crucible_equal;
+let execute = crucible_execute_func;
+let postcond = crucible_postcond;
+let returns = crucible_return;
+let array = crucible_array;
+let llvm_verify module function_name overrides spec =
+  crucible_llvm_verify module function_name overrides true spec prover;
+
+// Declare constants used to denote what kind of space a pointer is
+// pointing to.
+let CONST  = {{ 0 : [2] }}; //Points to allocated space that is READ ONLY.
+let WRITE  = {{ 1 : [2] }}; //Points to allocated space that can be modified.
+let UNALLOC = {{ 2 : [2] }}; //Pointer does not point to allocated space.
+let TRUE =   from_cryptol {{ 1 : [1] }};
+let FALSE =  from_cryptol {{ 0 : [1] }};
+
+/**
+ * Returns a tuple of SetupValue and Term of a new symbolic value
+ */
+let symbolic_setup_tuple (type : LLVMType) (name : String) = do {
+  cfvTerm <- crucible_fresh_var name type;
+  let setupVal = from_cryptol cfvTerm;
+  return (setupVal, cfvTerm);
+};
+
+/**
+ * Returns a SetupValue of a fresh variable
+ */
+let symbolic_variable (type : LLVMType) (name : String) = do {
+     r <- (crucible_fresh_var name type);
+     return (from_cryptol r);
+};
+
+// Standard LLVM type names
+let i8 = llvm_int 8;
+let i16 = llvm_int 16;
+let i32 = llvm_int 32;
+let i64 = llvm_int 64;
+
+// Standard C type names
+let int8_t = llvm_int 8;
+let int16_t = llvm_int 16;
+let int32_t = llvm_int 32;
+let int64_t = llvm_int 64;
+let uint8_t = llvm_int 8;
+let uint16_t = llvm_int 16;
+let uint32_t = llvm_int 32;
+let uint64_t = llvm_int 64;
+let char = llvm_int 8;

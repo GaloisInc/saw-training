@@ -3,7 +3,7 @@ Compositional Verification and Salsa20
 
 .. index:: compositional verification
 
-:ref:`swap-example` demonstrates verification and maintenance for a
+:ref:`pop-example` demonstrates verification and maintenance for a
 small standalone function. Most interesting programs are not just
 single functions, however. Good software engineering practice entails
 splitting programs into smaller functions, each of which can be
@@ -25,8 +25,8 @@ pseudorandom function utilizing add-rotate-XOR (ARX) operations on 32-bit words.
 `here <http://cr.yp.to/snuffle/spec.pdf>`_.
 
 The specification for this task is a trusted implementation written in
-:term:`Cryptol`. This is analogous to what is covered in :ref:`swap-cryptol` in
-the ``swap`` example, but for a larger system. Some examples from this
+:term:`Cryptol`. This is analogous to what is covered in :ref:`pop-cryptol` in
+the ``pop_count`` example, but for a larger system. Some examples from this
 specification are explored below for the sake of showing what larger
 Cryptol programs look like.
 
@@ -260,7 +260,7 @@ specification:
   :end-before: // END QUARTERROUND
 
 The helper ``pointer_to_fresh`` is the same as the one in
-:ref:`swap-example`. It allocates space for a new symbolic variable of
+:ref:`pop-example`. It allocates space for a new symbolic variable of
 the given type, returning both the symbolic value and the pointer to
 it. The symbolic values are passed to the Cryptol function
 ``quarterround`` to compute the expected result values. Because the
@@ -282,7 +282,7 @@ The specification for ``s20_hash`` is an example of one for which
 Putting everything together, ``main`` verifies the implementation
 functions according to these specifications. ``main`` has the type
 ``TopLevel ()`` --- this is the type of commands that can be run at
-the top level of a SAWScript program. In :ref:`swap-example`,
+the top level of a SAWScript program. In :ref:`pop-example`,
 ``crucible_llvm_verify`` was used on its own, and its return value was
 discarded. However, verification actually returns a useful result: it
 returns an association between a specification and the fact that the

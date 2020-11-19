@@ -10,13 +10,16 @@ let pop_is_ok = do {
 };
 
 let pop_cryptol_check = do {
-     x <- symbolic_setup_term uint32_t "x";
-     execute [x.s];
-     let t = x.t;
+     (s,t) <- symbolic_setup_tuple uint32_t "x";
+     execute [s];
      returns ( from_cryptol {{ popCount t }} );
-
 };
 
-llvm_verify popmod "pop_spec" [] pop_is_ok;
-llvm_verify popmod "pop_sparse" [] pop_cryptol_check;
-
+// verify against C "golden reference"
+llvm_verify popmod "pop_spec_check" [] pop_is_ok;
+// same verification against Cryptol spec
+llvm_verify popmod "pop_count" [] pop_cryptol_check;
+// another tricky implementation
+llvm_verify popmod "pop_count_mul" [] pop_cryptol_check;
+// verify the while loop version
+llvm_verify popmod "pop_count_sparse" [] pop_cryptol_check;

@@ -1,6 +1,4 @@
 include "helpers.saw";
-import "Popcount.cry";
-
 popmod <- llvm_load_module "popcount.bc";
 
 let pop_is_ok = do {
@@ -9,17 +7,6 @@ let pop_is_ok = do {
      returns ( TRUE );
 };
 
-let pop_cryptol_check = do {
-     (s,t) <- symbolic_setup_tuple uint32_t "x";
-     execute [s];
-     returns ( from_cryptol {{ popCount t }} );
-};
-
-// verify against C "golden reference"
-llvm_verify popmod "pop_spec" [] pop_is_ok;
-// same verification against Cryptol spec
-llvm_verify popmod "pop_count" [] pop_cryptol_check;
-// another tricky implementation
-llvm_verify popmod "pop_count_mul" [] pop_cryptol_check;
-// verify the while loop version
-llvm_verify popmod "pop_count_sparse" [] pop_cryptol_check;
+llvm_verify popmod "pop_spec_check" [] pop_is_ok;
+// llvm_verify popmod "pop_broken1_check" [] pop_is_ok;
+llvm_verify popmod "pop_broken2_check" [] pop_is_ok;

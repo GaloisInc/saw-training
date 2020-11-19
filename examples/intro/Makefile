@@ -1,10 +1,10 @@
 
-# Build commands for swap
+# Build commands for bitcode
 .SUFFIXES: .c .bc
 
 %.bc : %.c
 	clang -g -O1 -c -emit-llvm $< -o $@
-# End build commands for swap
+# End build commands for bitcode
 
 swap: swap.c
 	clang -g -O1 swap.c -o swap

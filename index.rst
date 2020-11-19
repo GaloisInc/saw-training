@@ -14,7 +14,7 @@ SAW, the Software Analysis Workbench, is a tool for program verification. This e
    :caption: Contents:
 
    Getting Started <GettingStarted>
-   Specifications and Verification <Swap>
+   Specifications and Verification <IntroToSAW>
    Compositional Verification of Salsa20 <Salsa20>
    Extended Exercise: HMAC Maintenance <HMACProblem>
    Example Solution: HMAC Maintenance <HMACSolution>

@@ -44,6 +44,8 @@ let llvm_verify module function_name overrides spec =
 let CONST  = {{ 0 : [2] }}; //Points to allocated space that is READ ONLY.
 let WRITE  = {{ 1 : [2] }}; //Points to allocated space that can be modified.
 let UNALLOC = {{ 2 : [2] }}; //Pointer does not point to allocated space.
+
+// Some constants for checking return values of boolean functions
 let TRUE =   from_cryptol {{ 1 : [1] }};
 let FALSE =  from_cryptol {{ 0 : [1] }};
 

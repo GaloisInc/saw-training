@@ -2,12 +2,10 @@ include "helpers.saw";
 swapmod <- llvm_load_module "swap.bc";
 
 let swap_is_ok = do {
-     x <- variable uint32_t "x" FRESH;
-     y <- variable uint32_t "y" FRESH;
-     execute [x.s, y.s];
-     returns (from_cryptol {{ 1 : [1] }});
+     x <- fresh_value uint32_t "x";
+     y <- fresh_value uint32_t "y";
+     execute [x, y];
+     returns ( TRUE );  // <- is this okay? (I added TRUE to helpers)
 };
 
 llvm_verify swapmod "swap_spec" [] swap_is_ok;
-
-e <- error;

@@ -6,7 +6,16 @@ popCount bits = ic ! 0 where
      ic = [0] # [ if elt then prev + 1 else prev | elt <- bits | prev <- ic]
 // End Cryptol Popcount
 
-// Had to make this monomorphic - there must be a way for SAW to handle it, though
-// popCount : {a,b} (fin a, b >= 1, b == (lg2 a)) => [a] -> [b]
-// popCount bits = ic ! 0 where
+// Begin Cryptol Popcount64
+popCount64 : [64] -> [64]
+popCount64 bits = ic ! 0 where
+     ic = [0] # [ if elt then prev + 1 else prev | elt <- bits | prev <- ic]
+// End Cryptol Popcount64
+
+// Decided to use concrete bit widths instead of polymorphic version:
+// popCountPoly : {a,b} (fin a, b >= 1, b == (lg2 a)) => [a] -> [b]
+// popCountPoly bits = ic ! 0 where
 //     ic = [0] # [ if elt then prev + 1 else prev | elt <- bits | prev <- ic]
+// 
+// popCount64 : [64] -> [64]
+// popCount64 bits = 0 # (popCountPoly bits)

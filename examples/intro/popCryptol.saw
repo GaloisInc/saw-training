@@ -1,25 +1,22 @@
+// Begin Cryptol popcount SAW
 include "helpers.saw";
 import "Popcount.cry";
 
 popmod <- llvm_load_module "popcount.bc";
 
-let pop_is_ok = do {
-     x <- symbolic_variable uint32_t "x";
-     execute [x];
-     returns ( TRUE );
-};
-
 let pop_cryptol_check = do {
-     (s,t) <- symbolic_setup_tuple uint32_t "x";
-     execute [s];
-     returns ( from_cryptol {{ popCount t }} );
+     (xs,xt) <- symbolic_setup_tuple uint32_t "x";
+     execute [xs];
+     returns ( from_cryptol {{ popCount xt }} );
 };
 
-// verify against C "golden reference"
-llvm_verify popmod "pop_spec_check" [] pop_is_ok;
 // same verification against Cryptol spec
 llvm_verify popmod "pop_count" [] pop_cryptol_check;
+// End Cryptol popcount SAW
+
+// Begin Cryptol additional verifications
 // another tricky implementation
 llvm_verify popmod "pop_count_mul" [] pop_cryptol_check;
 // verify the while loop version
 llvm_verify popmod "pop_count_sparse" [] pop_cryptol_check;
+// End Cryptol additional verifications

@@ -8,5 +8,3 @@ let pop_is_ok = do {
 };
 
 llvm_verify popmod "pop_spec_check" [] pop_is_ok;
-// llvm_verify popmod "pop_broken1_check" [] pop_is_ok;
-llvm_verify popmod "pop_broken2_check" [] pop_is_ok;

@@ -120,6 +120,10 @@ void random_value_test(int (*fun)(uint32_t), char *name) {
 }
 // END POP_RANDOM_VALUE_TEST
 
+bool pop_ok_check(uint32_t x) {
+    return pop_count_mul(x) == pop_spec(x);
+}
+
 int main() {
     random_value_test(&pop_count, "pop_count");
     random_value_test(&pop_count_mul, "pop_count_mul");

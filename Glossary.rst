@@ -19,6 +19,11 @@ Glossary
     The language used to write specifications and describe
     verification tasks in SAW.
 
+  SetupValue
+    A SAWScript SetupValue can be either a :term:`Term` or a pointer.
+    Arguments passed to symbolically executed functions must be
+    SetupValues.
+
   specification
     A description of what is desired of a program. Specifications can
     be written in anything from informal English to precise,
@@ -33,6 +38,12 @@ Glossary
   testing
     The practice of finding empirical evidence that a program lives up
     to a :term:`specification`.
+
+  Term
+    A SAWScript Term is a symbolic value that can only represent
+    values, not pointers. This is in contrast to a :term:`SetupValue`,
+    which is a superclass of Terms and Pointers.
+    Arguments passed to Cryptol functions must be Terms.
 
   verification
     The practice of finding mathematical evidence that a program lives

@@ -21,10 +21,13 @@ SAW, the Software Analysis Workbench, is a tool for program verification. This e
    Further Reading <Further>
    Glossary
 
+   The SAW Manual <SAWManual>
 
 Indices and tables
 ==================
 
 * :ref:`genindex`
+* :ref:`saw-saw-operators`
 * :ref:`modindex`
 * :ref:`search`
+

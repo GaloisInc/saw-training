@@ -3,6 +3,9 @@ Glossary
 
 .. glossary::
 
+  binding
+    Where a name is given meaning, either by defining it or declaring it as an argument.
+
   compositional verification
     A verification technique based on the idea that, when proving properties of a given method or function, we can make use of properties we have already proved about its callees.
 
@@ -11,6 +14,9 @@ Glossary
 
   proof maintenance
     The process of keeping verification artifacts, such as specifications and proofs, up to date with changes in a software system over time.
+
+  REPL
+    Short for "read-eval-print-loop". A user interface where expressions are first read from user input, then evaluated, with the result printed to the console. This occurs in a loop.
 
   SAWCore
     The internal representation for programs in SAW.

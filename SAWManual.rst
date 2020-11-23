@@ -1402,6 +1402,9 @@ To load LLVM code, simply provide the location of a valid bitcode file to the :s
 
 The resulting :saw:ref:`LLVMModule` can be passed into the various functions described below to perform analysis of specific LLVM functions.
 
+.. saw:type:: LLVMModule
+
+  A representation of an LLVM module, as loaded by :saw:ref:`llvm_load_module`.
 
 The LLVM bitcode parser should generally work with LLVM versions between 3.5 and 9.0, though it may be incomplete for some versions. Debug metadata has changed somewhat throughout that version range, so is the most likely case of incompleteness. We aim to support every version after 3.5, however, so report any parsing failures as `on GitHub <https://github.com/GaloisInc/saw-script/issues>`_.
 
@@ -1414,9 +1417,12 @@ Once the class path is configured, you can pass the name of a class to the java_
 
   Load a Java class from JVM bytecode.
 
-     
 
 The resulting :saw:ref:`JavaClass` can be passed into the various functions described below to perform analysis of specific Java methods.
+
+.. saw:type:: JavaClass
+
+  A representation of a Java vlass, as loaded by :saw:ref:`java_load_class`.
 
 Java class files from any JDK newer than version 6 should work. However, JDK version 9 and newer do not contain a JAR file containing the standard libraries, and therefore do not currently work with SAW. We are investigating the best way to resolve this issue.
 
@@ -1640,6 +1646,15 @@ A specifications for Crucible consists of three logical components:
 
 These three portions of the specification are written in sequence within a :saw:ref:`do` block of :saw:ref:`CrucibleSetup` (or :saw:ref:`JVMSetup`) type. The command :saw:ref:`crucible_execute_func` (or :saw:ref:`jvm_execute_func`) separates the specification of the initial state from the specification of the final state, and specifies the arguments to the function in terms of the initial state. Most of the commands available for state description will work either before or after :saw:ref:`crucible_execute_func`, though with slightly different meaning, as described below.
 
+.. saw:type:: CrucibleSetup
+
+  A value of type ``CrucibleSetup ()`` represents a description of a verification task for LLVM code.
+
+.. saw:type:: JVMSetup
+
+  A value of type ``JVMSetup ()`` represents a description of a verification task for JVM code.
+
+
 Creating Fresh Variables
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1736,6 +1751,9 @@ Once the initial state has been configured, the :saw:ref:`crucible_execute_func`
 .. saw:command:: crucible_execute_func
   :type: [SetupValue] -> CrucibleSetup ()
 
+.. saw:command:: jvm_execute_func
+  :type: [JVMValue] -> JVMSetup ()
+
 
 Return Values
 ~~~~~~~~~~~~~
@@ -1780,12 +1798,23 @@ We can then compile the C file ``add.c`` into the bitcode file ``add.bc`` and ve
     m <- llvm_load_module "add.bc";
     add_ms <- crucible_llvm_verify m "add" [] false add_setup abc;
 
+.. _compositional verification:
+
 Compositional Verification
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The primary advantage of the specification-based approach to verification is that it allows for compositional reasoning. That is, when proving properties of a given method or function, we can make use of properties we have already proved about its callees rather than analyzing them anew. This enables us to reason about much larger and more complex systems than otherwise possible.
 
 The :saw:ref:`crucible_llvm_verify` and :saw:ref:`crucible_jvm_verify` functions return values of type :saw:ref:`CrucibleMethodSpec` and :saw:ref:`JVMMethodSpec`, respectively. These values are opaque objects that internally contain both the information provided in the associated :saw:ref:`JVMSetup` or :saw:ref:`CrucibleSetup` blocks and the results of the verification process.
+
+.. saw:type:: CrucibleMethodSpec
+
+  Opaque objects that contain both specifications for functions and the results of performing verification on them according to these specifications.
+
+.. saw:type:: JVMMethodSpec
+
+  Opaque objects that contain both specifications for functions and the results of performing verification on them according to these specifications.
+
 
 Any of these ``MethodSpec`` objects can be passed in via the third argument of the ``..._verify`` functions. For any function or method specified by one of these parameters, the simulator will not follow calls to the associated target. Instead, it will perform the following steps:
 
@@ -1819,3 +1848,573 @@ And we can verify it using what we’ve already proved about ``add``:
     crucible_llvm_verify m "dbl" [add_ms] false dbl_setup abc;
 
 In this case, doing the verification compositionally doesn’t save computational effort, since the functions are so simple, but it illustrates the approach.
+
+Specifying Heap Layout
+~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+Most functions that operate on pointers expect that certain pointers point to allocated memory before they are called. The :saw:ref:`crucible_alloc` command allows you to specify that a function expects a particular pointer to refer to an allocated region appropriate for a specific type.
+
+.. saw:command:: crucible_alloc
+  :type: LLVMType -> CrucibleSetup SetupValue
+
+  This command returns a :saw:ref:`SetupValue` consisting of a pointer to the allocated space, which can be used wherever a pointer-valued :saw:ref:`SetupValue` can be used.
+
+In the initial state, :saw:ref:`crucible_alloc` specifies that the function expects a pointer to allocated space to exist. In the final state, it specifies that the function itself performs an allocation.
+
+When using the experimental Java implementation, separate functions exist for specifying that arrays or objects are allocated:
+
+
+.. saw:command:: jvm_alloc_array
+  :type: Int -> JavaType -> JVMSetup JVMValue
+
+  Specifies an array of the given concrete size, with elements of the given type.
+
+.. saw:command:: jvm_alloc_object
+  :type: String -> JVMSetup JVMValue
+
+  Specifies an object of the given class name.
+
+
+In LLVM, it’s also possible to construct fresh pointers that do not point to allocated memory (which can be useful for functions that manipulate pointers but not the values they point to).
+
+.. saw:command:: crucible_fresh_pointer
+  :type: LLVMType -> CrucibleSetup SetupValue
+
+  Construct a fresh pointer that does not point to allocated memory.
+
+The `NULL` pointer is called :saw:ref:`crucible_null` in LLVM and :saw:ref:`jvm_null` in JVM:
+
+.. saw:value:: crucible_null
+  :type: SetupValue
+
+.. saw:value:: jvm_null
+  :type: JVMValue
+
+     
+One final, slightly more obscure command is the following:
+
+.. saw:command:: crucible_alloc_readonly
+  :type: LLVMType -> CrucibleSetup SetupValue
+
+  This works like :saw:ref:`crucible_alloc` except that writes to the space allocated are forbidden. This can be useful for specifying that a function should take as an argument a pointer to allocated space that it will not modify. Unlike :saw:ref:`crucible_alloc`, regions allocated with :saw:ref:`crucible_alloc_readonly` are allowed to alias other read-only regions.
+
+
+Specifying Heap Values
+~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+Pointers returned by :saw:ref:`crucible_alloc` don’t, initially, point to anything. So if you pass such a pointer directly into a function that tried to dereference it, symbolic execution will fail with a message about an invalid load. For some functions, such as those that are intended to initialize data structures (writing to the memory pointed to, but never reading from it), this sort of uninitialized memory is appropriate. In most cases, however, it’s more useful to state that a pointer points to some specific (usually symbolic) value, which you can do with the :saw:ref:`crucible_points_to` command.
+
+
+.. saw:command:: crucible_points_to
+  :type: SetupValue -> SetupValue -> CrucibleSetup ()
+  
+  Takes two :saw:ref:`SetupValue` arguments, the first of which must be a pointer, and states that the memory specified by that pointer should contain the value given in the second argument (which may be any type of :saw:ref:`SetupValue`).
+
+When used in the final state, :saw:ref:`crucible_points_to` specifies that the given pointer should point to the given value when the function finishes.
+
+Occasionally, because C programs frequently reinterpret memory of one type as another through casts, it can be useful to specify that a pointer points to a value that does not agree with its static type.
+
+.. saw:command:: crucible_points_to_untyped
+  :type: SetupValue -> SetupValue -> CrucibleSetup ()
+
+  Just like :saw:ref:`crucible_points_to`, but omits type checking. Rather than omitting type checking across the board, we introduced this additional function to make it clear when a type reinterpretation is intentional.
+
+
+Working with Compound Types
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The commands mentioned so far give us no way to specify the values of compound types (arrays or ``structs``). Compound values can be dealt with either piecewise or in their entirety.
+
+
+
+.. saw:function:: crucible_elem
+  :type: SetupValue -> Int -> SetupValue
+
+  Yields a pointer to an internal element of a compound value. For arrays, the Int parameter is the array index. For struct values, it is the field index.
+
+.. saw:function:: crucible_field
+  :type: SetupValue -> String -> SetupValue
+
+  Yields a pointer to a particular named struct field, if debugging information is available in the bitcode.
+
+
+
+Either of these functions can be used with :saw:ref:`crucible_points_to` to specify the value of a particular array element or ``struct field``. Sometimes, however, it is more convenient to specify all array elements or field values at once. The :saw:ref:`crucible_array` and :saw:ref:`crucible_struct` functions construct compound values from lists of element values.
+
+
+.. saw:function:: crucible_array
+  :type: [SetupValue] -> SetupValue
+
+.. saw:function:: crucible_struct
+  :type: [SetupValue] -> SetupValue
+
+To specify an array or struct in which each element or field is symbolic, it would be possible, but tedious, to use a large combination of :saw:ref:`crucible_fresh_var` and :saw:ref:`crucible_elem` or :saw:ref:`crucible_field` commands. However, the following function can simplify the common case where you want every element or field to have a fresh value.
+
+.. saw:command:: crucible_fresh_expanded_val
+  :type: LLVMType -> CrucibleSetup SetupValue
+
+The :saw:ref:`crucible_struct` function normally creates a ``struct`` whose layout obeys the alignment rules of the platform specified in the LLVM file being analyzed. Structs in LLVM can explicitly be "packed", however, so that every field immediately follows the previous in memory. The following command will create values of such types:
+
+.. saw:function:: crucible_packed_struct
+  :type: [SetupValue] -> SetupValue
+
+In the experimental Java verification implementation, the following functions can be used to state the equivalent of a combination of :saw:ref:`crucible_points_to` and either :saw:ref:`crucible_elem` or :saw:ref:`crucible_field`.
+
+.. saw:command:: jvm_elem_is
+  :type: JVMValue -> Int -> JVMValue -> JVMSetup ()
+
+  Specifies the value of an array element.
+
+.. saw:command:: jvm_field_is
+  :type: JVMValue -> String -> JVMValue -> JVMSetup ()
+
+  Specifies the name of an object field.
+
+
+Global variables
+~~~~~~~~~~~~~~~~
+
+Mutable global variables that are accessed in a function must first be allocated by calling :saw:ref:`crucible_alloc_global` on the name of the global.
+
+.. saw:command:: crucible_alloc_global
+  :type: String -> CrucibleSetup ()
+
+This ensures that all global variables that might influence the function are accounted for explicitly in the specification: if :saw:ref:`crucible_alloc_global` is used in the precondition, there must be a corresponding :saw:ref:`crucible_points_to` in the postcondition describing the new state of that global. Otherwise, a specification might not fully capture the behavior of the function, potentially leading to unsoundness in the presence of compositional verification.
+
+
+
+Immutable (i.e. ``const``) global variables are allocated implicitly, and do not require a call to :saw:ref:`crucible_alloc_global`.
+
+
+
+Pointers to global variables or functions can be accessed with :saw:ref:`crucible_global`:
+
+
+.. saw:function:: crucible_global
+  :type: String -> SetupValue
+
+
+Like the pointers returned by :saw:ref:`crucible_alloc`, however, these aren’t initialized at the beginning of symbolic – setting global variables may be unsound in the presence of :ref:`compositional verification`.
+
+To understand the issues surrounding global variables, consider the following C code:
+
+.. code-block:: C
+
+    int x = 0;
+
+    int f(int y) {
+      x = x + 1;
+      return x + y;
+    }
+
+    int g(int z) {
+      x = x + 2;
+      return x + z;
+    }
+
+
+One might initially write the following specifications for ``f`` and ``g``:
+
+.. code-block:: SAWScript
+
+    m <- llvm_load_module "./test.bc";
+
+    f_spec <- crucible_llvm_verify m "f" [] true (do {
+        y <- crucible_fresh_var "y" (llvm_int 32);
+        crucible_execute_func [crucible_term y];
+        crucible_return (crucible_term {{ 1 + y : [32] }});
+    }) abc;
+
+    g_spec <- crucible_llvm_verify m "g" [] true (do {
+        z <- crucible_fresh_var "z" (llvm_int 32);
+        crucible_execute_func [crucible_term z];
+        crucible_return (crucible_term {{ 2 + z : [32] }});
+    }) abc;
+
+If globals were always initialized at the beginning of verification, both of these specs would be provable. However, the results wouldn’t truly be compositional. For instance, it’s not the case that ``f(g(z)) == z + 3`` for all ``z``, because both ``f`` and ``g`` modify the global variable ``x`` in a way that crosses function boundaries.
+
+To deal with this, we can use the following function:
+
+.. saw:function:: crucible_global_initializer
+  :type: String -> SetupValue
+
+  Returns the value of the constant global initializer for the named global variable.
+
+Given this function, the specifications for ``f`` and ``g`` can make this reliance on the initial value of ``x`` explicit:
+
+.. code-block:: SAWScript
+
+    m <- llvm_load_module "./test.bc";
+
+
+    let init_global name = do {
+      crucible_points_to (crucible_global name)
+                         (crucible_global_initializer name);
+    };
+
+    f_spec <- crucible_llvm_verify m "f" [] true (do {
+        y <- crucible_fresh_var "y" (llvm_int 32);
+        init_global "x";
+        crucible_execute_func [crucible_term y];
+        crucible_return (crucible_term {{ 1 + y : [32] }});
+    }) abc;
+
+which initializes ``x`` to whatever it is initialized to in the C code at the beginning of verification. This specification is now safe for compositional verification: SAW won’t use the specification ``f_spec`` unless it can determine that ``x`` still has its initial value at the point of a call to ``f``.
+
+Preconditions and Postconditions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sometimes a function is only well-defined under certain conditions, or sometimes you may be interested in certain initial conditions that give rise to specific final conditions. For these cases, you can specify an arbitrary predicate as a precondition or post-condition, using any values in scope at the time.
+
+
+.. saw:command:: crucible_precond
+  :type: Term -> CrucibleSetup ()
+.. saw:command:: crucible_postcond
+  :type: Term -> CrucibleSetup ()
+.. saw:command:: jvm_precond
+  :type: Term -> JVMSetup ()
+.. saw:command:: jvm_postcond
+  :type: Term -> JVMSetup ()
+
+     
+
+These two commands take :saw:ref:`Term` arguments, and therefore cannot describe the values of pointers. The :saw:ref:`crucible_equal` command states that two values of type :saw:ref:`SetupValue` should be equal, and can be used in either the initial or the final state.
+
+.. saw:command:: crucible_equal
+  :type: SetupValue -> SetupValue -> CrucibleSetup ()
+
+The use of :saw:ref:`crucible_equal` can also sometimes lead to more efficient symbolic execution when the predicate of interest is an equality.
+
+
+Assuming specifications
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Normally, a ``MethodSpec`` is the result of both simulation and proof of the target code. However, in some cases, it can be useful to use a ``MethodSpec`` to specify some code that either doesn’t exist or is hard to prove. The previously-mentioned :saw:ref:`assume_unsat` tactic omits proof but does not prevent simulation of the function. To skip simulation altogether, one can use:
+
+.. saw:command:: crucible_llvm_unsafe_assume_spec
+  :type: LLVMModule -> String -> CrucibleSetup () -> TopLevel CrucibleMethodSpec
+
+Or, in the experimental JVM implementation:
+
+.. saw:command:: crucible_jvm_unsafe_assume_spec
+  :type: JavaClass -> String -> JVMSetup () -> TopLevel JVMMethodSpec
+
+
+A Heap-Based Example
+~~~~~~~~~~~~~~~~~~~~
+
+To tie all of the command descriptions from the previous sections together, consider the case of verifying the correctness of a C program that computes the dot product of two vectors, where the length and value of each vector are encapsulated together in a ``struct``.
+
+The dot product can be concisely specified in Cryptol as follows:
+
+.. code-block:: Cryptol
+
+    dotprod : {n, a} (fin n, fin a) => [n][a] -> [n][a] -> [a]
+    dotprod xs ys = sum (zip (*) xs ys)
+
+To implement this in C, let’s first consider the type of vectors:
+
+.. code-block:: C
+
+    typedef struct {
+        uint32_t *elts;
+        uint32_t size;
+    } vec_t;
+
+This struct contains a pointer to an array of 32-bit elements, and a 32-bit value indicating how many elements that array has.
+
+We can compute the dot product of two of these vectors with the following C code (which uses the size of the shorter vector if they differ in size).
+
+.. code-block:: C
+
+    uint32_t dotprod_struct(vec_t *x, vec_t *y) {
+        uint32_t size = MIN(x->size, y->size);
+        uint32_t res = 0;
+        for(size_t i = 0; i < size; i++) {
+            res += x->elts[i] * y->elts[i];
+        }
+        return res;
+    }
+
+
+
+The entirety of this implementation can be found in the ``examples/llvm/dotprod_struct.c`` file in the ``saw-script`` repository.
+
+To verify this program in SAW, it will be convenient to define a couple of utility functions (which are generally useful for many heap-manipulating programs). First, combining allocation and initialization to a specific value can make many scripts more concise:
+
+.. code-block:: SAWScript
+
+    let alloc_init ty v = do {
+        p <- crucible_alloc ty;
+        crucible_points_to p v;
+        return p;
+    };
+
+
+This creates a pointer ``p`` pointing to enough space to store type ``ty``, and then indicates that the pointer points to value ``v`` (which should be of that same type).
+
+A common case for allocation and initialization together is when the initial value should be entirely symbolic.
+
+.. code-block:: SAWScript
+
+    let ptr_to_fresh n ty = do {
+        x <- crucible_fresh_var n ty;
+        p <- alloc_init ty (crucible_term x);
+        return (x, p);
+    };
+
+This function returns the pointer just allocated along with the fresh symbolic value it points to.
+
+Given these two utility functions, the ``dotprod_struct`` function can be specified as follows:
+
+.. code-block:: SAWScript
+
+    let dotprod_spec n = do {
+        let nt = crucible_term {{ `n : [32] }};
+        (xs, xsp) <- ptr_to_fresh "xs" (llvm_array n (llvm_int 32));
+        (ys, ysp) <- ptr_to_fresh "ys" (llvm_array n (llvm_int 32));
+        let xval = crucible_struct [ xsp, nt ];
+        let yval = crucible_struct [ ysp, nt ];
+        xp <- alloc_init (llvm_struct "struct.vec_t") xval;
+        yp <- alloc_init (llvm_struct "struct.vec_t") yval;
+        crucible_execute_func [xp, yp];
+        crucible_return (crucible_term {{ dotprod xs ys }});
+    };
+
+Any instantiation of this specification is for a specific vector length ``n``, and assumes that both input vectors have that length. That length ``n`` automatically becomes a type variable in the subsequent Cryptol expressions, and the backtick operator is used to reify that type as a bit vector of length 32.
+
+The entire script can be found in the ``dotprod_struct-crucible.saw`` file alongside ``dotprod_struct.c``.
+
+Running this script results in the following::
+
+    Loading file "dotprod_struct.saw"
+    Proof succeeded! dotprod_struct
+    Registering override for `dotprod_struct`
+      variant `dotprod_struct`
+    Symbolic simulation completed with side conditions.
+    Proof succeeded! dotprod_wrap
+
+Using Ghost State
+~~~~~~~~~~~~~~~~~
+In some cases, information relevant to verification is not directly present in the concrete state of the program being verified. This can happen for at least two reasons:
+
+* When providing specifications for external functions, for which source code is not present. The external code may read and write global state that is not directly accessible from the code being verified.
+
+* When the abstract specification of the program naturally uses a different representation for some data than the concrete implementation in the code being verified does.
+
+One solution to these problems is the use of *ghost state*. This can be thought of as additional global state that is visible only to the verifier. Ghost state with a given name can be declared at the top level with the following function:
+
+
+.. saw:command:: crucible_declare_ghost_state
+  :type: String -> TopLevel Ghost
+
+Ghost state variables do not initially have any particular type, and can store data of any type. Given an existing ghost variable the following function can be used to specify its value:
+
+.. saw:command:: crucible_ghost_value
+  :type: Ghost -> Term -> CrucibleSetup ()
+
+Currently, this function can only be used for LLVM verification, though that will likely be generalized in the future. It can be used in either the pre state or the post state, to specify the value of ghost state either before or after the execution of the function, respectively.
+
+An Extended Example
+-------------------
+
+To tie together many of the concepts in this manual, we now present a non-trivial verification task in its entirety. All of the code for this example can be found in the ``examples/salsa20`` directory of `the SAWScript repository <https://github.com/GaloisInc/saw-script>`_.
+
+Salsa20 Overview
+~~~~~~~~~~~~~~~~
+
+`Salsa20 <https://en.wikipedia.org/wiki/Salsa20>`_ is a stream cipher developed in 2005 by Daniel J. Bernstein, built on a pseudorandom function utilizing add-rotate-XOR (ARX) operations on 32-bit words. Bernstein himself has provided several public domain implementations of the cipher, optimized for common machine architectures. For the mathematically inclined, his specification for the cipher can be found `here <http://cr.yp.to/snuffle/spec.pdf>`_.
+
+The repository referenced above contains three implementations of the Salsa20 cipher: A reference Cryptol implementation (which we take as correct in this example), and two C implementations, one of which is from Bernstein himself. For this example, we focus on the second of these C implementations, which more closely matches the Cryptol implementation. Full verification of Bernstein’s implementation is available in ``examples/salsa20/djb``, for the interested. The code for this verification task can be found in the files named according to the pattern ``examples/salsa20/(s|S)alsa20.*``.
+
+Specifications
+~~~~~~~~~~~~~~
+
+We now take on the actual verification task. This will be done in two stages: We first define some useful utility functions for constructing common patterns in the specifications for this type of program (i.e. one where the arguments to functions are modified in-place.) We then demonstrate how one might construct a specification for each of the functions in the Salsa20 implementation described above.
+
+Utility Functions
++++++++++++++++++
+
+We first define the function ``alloc_init : LLVMType -> Term -> CrucibleSetup SetupValue``.
+
+``alloc_init ty v`` returns a :saw:ref:`SetupValue` consisting of a pointer to memory allocated and initialized to a value ``v`` of type ``ty``. ``alloc_init_readonly`` does the same, except the memory allocated cannot be written to.
+
+.. code-block:: SAWScript
+
+    import "Salsa20.cry";
+
+    let alloc_init ty v = do {
+        p <- crucible_alloc ty;
+        crucible_points_to p (crucible_term v);
+        return p;
+    };
+
+    let alloc_init_readonly ty v = do {
+        p <- crucible_alloc_readonly ty;
+        crucible_points_to p (crucible_term v);
+        return p;
+    };
+
+We now define ``ptr_to_fresh : String -> LLVMType -> CrucibleSetup (Term, SetupValue)``.
+
+``ptr_to_fresh n ty`` returns a pair ``(x, p)`` consisting of a fresh symbolic variable ``x`` of type ``ty`` and a pointer ``p`` to it. ``n`` specifies the name that SAW should use when printing ``x``. ``ptr_to_fresh_readonly`` does the same, but returns a pointer to space that cannot be written to.
+
+.. code-block:: SAWScript
+
+    let ptr_to_fresh n ty = do {
+        x <- crucible_fresh_var n ty;
+        p <- alloc_init ty x;
+        return (x, p);
+    };
+
+    let ptr_to_fresh_readonly n ty = do {
+        x <- crucible_fresh_var n ty;
+        p <- alloc_init_readonly ty x;
+        return (x, p);
+    };
+
+Finally, we define ``oneptr_update_func : String -> LLVMType -> Term -> CrucibleSetup ()``.
+
+``oneptr_update_func n ty f`` specifies the behavior of a function that takes a single pointer (with a printable name given by ``n``) to memory containing a value of type ``ty`` and mutates the contents of that memory. The specification asserts that the contents of this memory after execution are equal to the value given by the application of ``f`` to the value in that memory before execution.
+
+.. code-block:: SAWScript
+
+    let oneptr_update_func n ty f = do {
+        (x, p) <- ptr_to_fresh n ty;
+        crucible_execute_func [p];
+        crucible_points_to p (crucible_term {{ f x }});
+    };
+
+The ``quarterround`` operation
+++++++++++++++++++++++++++++++
+
+The C function we wish to verify has type ``void s20_quarterround(uint32_t *y0, uint32_t *y1, uint32_t *y2, uint32_t *y3)``.
+
+The function’s specification generates four symbolic variables and pointers to them in the precondition/setup stage. The pointers are passed to the function during symbolic execution via ``crucible_execute_func``. Finally, in the postcondition/return stage, the expected values are computed using the trusted Cryptol implementation and it is asserted that the pointers do in fact point to these expected values.
+
+.. code-block:: SAWScript
+
+    let quarterround_setup : CrucibleSetup () = do {
+        (y0, p0) <- ptr_to_fresh "y0" (llvm_int 32);
+        (y1, p1) <- ptr_to_fresh "y1" (llvm_int 32);
+        (y2, p2) <- ptr_to_fresh "y2" (llvm_int 32);
+        (y3, p3) <- ptr_to_fresh "y3" (llvm_int 32);
+
+        crucible_execute_func [p0, p1, p2, p3];
+
+        let zs = {{ quarterround [y0,y1,y2,y3] }}; // from Salsa20.cry
+        crucible_points_to p0 (crucible_term {{ zs@0 }});
+        crucible_points_to p1 (crucible_term {{ zs@1 }});
+        crucible_points_to p2 (crucible_term {{ zs@2 }});
+        crucible_points_to p3 (crucible_term {{ zs@3 }});
+    };
+
+Simple Updating Functions
++++++++++++++++++++++++++
+
+The following functions can all have their specifications given by the utility function ``oneptr_update_func`` implemented above, so there isn’t much to say about them.
+
+.. code-block:: SAWScript
+
+    let rowround_setup =
+        oneptr_update_func "y" (llvm_array 16 (llvm_int 32)) {{ rowround }};
+
+    let columnround_setup =
+        oneptr_update_func "x" (llvm_array 16 (llvm_int 32)) {{ columnround }};
+
+    let doubleround_setup =
+        oneptr_update_func "x" (llvm_array 16 (llvm_int 32)) {{ doubleround }};
+
+    let salsa20_setup =
+        oneptr_update_func "seq" (llvm_array 64 (llvm_int 8)) {{ Salsa20 }};
+
+32-Bit Key Expansion
+++++++++++++++++++++
+
+The next function of substantial behavior that we wish to verify has the following prototype:
+
+.. code-block:: C
+
+    void s20_expand32( uint8_t *k
+                     , uint8_t n[static 16]
+                     , uint8_t keystream[static 64]
+                     )
+
+
+
+This function’s specification follows a similar pattern to that of ``s20_quarterround``, though for extra assurance we can make sure that the function does not write to the memory pointed to by ``k`` or ``n`` using the utility ``ptr_to_fresh_readonly``, as this function should only modify ``keystream``. Besides this, we see the call to the trusted Cryptol implementation specialized to ``a=2``, which does 32-bit key expansion (since the Cryptol implementation can also specialize to ``a=1`` for 16-bit keys). This specification can easily be changed to work with 16-bit keys.
+
+.. code-block:: SAWScript
+
+    let salsa20_expansion_32 = do {
+        (k, pk) <- ptr_to_fresh_readonly "k" (llvm_array 32 (llvm_int 8));
+        (n, pn) <- ptr_to_fresh_readonly "n" (llvm_array 16 (llvm_int 8));
+
+        pks <- crucible_alloc (llvm_array 64 (llvm_int 8));
+
+        crucible_execute_fun [pk, pn, pks];
+
+        let rks = {{ Salsa20_expansion`{a=2}(k, n) }};
+        crucible_points_to pks (crucible_term rks);
+    };
+
+32-bit Key Encryption
++++++++++++++++++++++
+
+Finally, we write a specification for the encryption function itself, which has type
+
+.. code-block:: C
+
+    enum s20_status_t s20_crypt32( uint8_t *key
+                                 , uint8_t nonce[static 8]
+                                 , uint32_t si
+                                 , uint8_t *buf
+                                 , uint32_t buflen
+                                 )
+
+As before, we can ensure this function does not modify the memory pointed to by ``key`` or ``nonce``. We take ``si``, the stream index, to be 0. The specification is parameterized on a number ``n``, which corresponds to ``buflen``. Finally, to deal with the fact that this function returns a status code, we simply specify that we expect a success (status code 0) as the return value in the postcondition stage of the specification.
+
+.. code-block:: SAWScript
+
+    let s20_encrypt32 n = do {
+        (key, pkey) <- ptr_to_fresh_readonly "key" (llvm_array 32 (llvm_int 8));
+        (v, pv) <- ptr_to_fresh_readonly "nonce" (llvm_array 8 (llvm_int 8));
+        (m, pm) <- ptr_to_fresh "buf" (llvm_array n (llvm_int 8));
+
+        crucible_execute_func [ pkey
+                              , pv
+                              , crucible_term {{ 0 : [32] }}
+                              , pm
+                              , crucible_term {{ `n : [32] }}
+                              ];
+
+        crucible_points_to pm (crucible_term {{ Salsa20_encrypt (key, v, m) }});
+        crucible_return (crucible_term {{ 0 : [32] }});
+    };
+
+Verifying Everything
+~~~~~~~~~~~~~~~~~~~~
+
+Finally, we can verify all of the functions. Notice the use of compositional verification and that path satisfiability checking is enabled for those functions with loops not bounded by explicit constants. Notice that we prove the top-level function for several sizes; this is due to the limitation that SAW can only operate on finite programs (while Salsa20 can operate on any input size.)
+
+.. code-block:: SAWScript
+
+    let main : TopLevel () = do {
+        m      <- llvm_load_module "salsa20.bc";
+        qr     <- crucible_llvm_verify m "s20_quarterround" []      false quarterround_setup   abc;
+        rr     <- crucible_llvm_verify m "s20_rowround"     [qr]    false rowround_setup       abc;
+        cr     <- crucible_llvm_verify m "s20_columnround"  [qr]    false columnround_setup    abc;
+        dr     <- crucible_llvm_verify m "s20_doubleround"  [cr,rr] false doubleround_setup    abc;
+        s20    <- crucible_llvm_verify m "s20_hash"         [dr]    false salsa20_setup        abc;
+        s20e32 <- crucible_llvm_verify m "s20_expand32"     [s20]   true  salsa20_expansion_32 abc;
+        s20encrypt_63 <- crucible_llvm_verify m "s20_crypt32" [s20e32] true (s20_encrypt32 63) abc;
+        s20encrypt_64 <- crucible_llvm_verify m "s20_crypt32" [s20e32] true (s20_encrypt32 64) abc;
+        s20encrypt_65 <- crucible_llvm_verify m "s20_crypt32" [s20e32] true (s20_encrypt32 65) abc;
+
+        print "Done!";
+    };
+

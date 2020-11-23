@@ -33,6 +33,7 @@ class SAWScriptLexer(RegexLexer):
             (r'\{\{', Literal, 'cryptol'),
             (r'<-', Operator.Word),
             (r'=', Operator.Word),
+            (r':', Operator.Word),
             (r'[\[\]{}\(\);,]', Punctuation),
             (r'/\*', Comment.Multiline, 'comment'),
             (r'//.*?$', Comment.Singleline),

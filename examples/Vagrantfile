@@ -1,0 +1,53 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+Vagrant.configure("2") do |config|
+  # The most common configuration options are documented and commented below.
+  # For a complete reference, please see the online documentation at
+  # https://docs.vagrantup.com.
+
+  # Every Vagrant development environment requires a box. You can search for
+  # boxes at https://vagrantcloud.com/search.
+  config.vm.box = "hashicorp/bionic64"
+
+  config.vm.provider "virtualbox" do |v|
+    v.linked_clone = true
+    v.cpus = 1
+    v.memory = 4096
+    v.name = "SAW toolchain (Ubuntu 18)"
+  end
+
+  config.vm.provision "shell", inline: <<-SHELL
+    echo "updating apt"
+    add-apt-repository ppa:sri-csl/formal-methods
+    apt-get -qq update
+    echo "installing dependencies"
+    apt-get -qq install -y clang-7 yices2 unzip
+    echo "symlinking clang"
+    (cd /usr/bin; ln -s ../lib/llvm-7/bin/clang .)
+    cd /home/vagrant
+    sudo -u vagrant echo export PATH=/home/vagrant/saw-0.6-Linux-x86_64/bin:$PATH  >> /home/vagrant/.bashrc
+    echo "checking out saw and examples"
+    export HOME=/home/vagrant
+    echo "installing toolchain and examples"
+    sudo -u vagrant wget -q https://github.com/GaloisInc/saw-script/releases/download/v0.6/saw-0.6-Linux-x86_64.tar.gz
+    sudo -u vagrant wget -q https://saw.galois.com/intro/_downloads/b78063675d82bd43de0a313424ddfa57/examples.tar.gz
+
+    sudo -u vagrant tar xf saw-0.6-Linux-x86_64.tar.gz
+    sudo -u vagrant tar xf examples.tar.gz
+
+    sudo -u vagrant wget -q https://github.com/Z3Prover/z3/releases/download/z3-4.8.9/z3-4.8.9-x64-ubuntu-16.04.zip
+    sudo -u vagrant unzip z3-4.8.9-x64-ubuntu-16.04.zip
+    cd z3-4.8.9-x64-ubuntu-16.04
+    tar cf - . | (cd /usr/local ; tar xvf -)
+    cd ..
+
+    echo "now you can log in to this virtual machine with 'vagrant ssh'"
+    echo "then cd to examples/swap and proceed with the tutorial at https://saw.galois.com/intro/GettingStarted.html"
+  SHELL
+
+end

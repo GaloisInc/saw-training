@@ -23,5 +23,6 @@ example-output:
 	rm -rf downloads
 	rm -f examples.tar.gz
 	python3 build_examples.py
+	cp examples/Vagrantfile downloads/examples
 	tar czf examples.tar.gz -C downloads examples
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)

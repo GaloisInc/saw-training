@@ -125,6 +125,11 @@ bool pop_ok_check(uint32_t x) {
 }
 
 int main() {
+    if (pop_check()) {
+        printf("fixed value test OK\n");
+    } else {
+        printf("fixed value test FAILURE\n");
+    }
     random_value_test(&pop_count, "pop_count");
     random_value_test(&pop_count_mul, "pop_count_mul");
     random_value_test(&pop_count_sparse, "pop_count_sparse");

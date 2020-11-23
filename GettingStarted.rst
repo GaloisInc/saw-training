@@ -88,4 +88,38 @@ you have a couple options:
     ``PATH`` to use it instead of the current version, or
   * use docker or vagrant to run ``saw`` and its tools in a virtual machine.
     The SAW VM configurations for docker and vagrant include known-good versions of all of SAW's
-    dependencies.
+    dependencies. The SAW install page describes how to install SAW in
+    a Docker container.
+
+Using Vagrant to Install and Use SAW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- install `VirtualBox - instructions here <https://www.virtualbox.org/wiki/Downloads>`_
+- install `Vagrant - instructions here <https://www.vagrantup.com/>`_
+- cd to the ``examples`` directory unpacked from :download:`example files </examples.tar.gz>`, which includes a ``Vagrantfile``
+- start and log in to the virtual machine with the SAW tools configured with these commands:
+
+
+.. code-block::
+
+  vagrant up       # launch the virtual machine
+  vagrant ssh      # log in to your virtual machine
+  cd examples
+  make popcount.bc
+  saw pop.saw      # should run to completion
+
+
+- the first time you type ``vagrant up`` the system will download
+  and configure SAW and its dependencies, so it will take a few
+  minutes. Subsequent launches will be much faster.
+
+- when you're done, log out and cleanly shut down your virtual
+  machine with the command ``vagrant halt``
+
+- editing files while logged in to a virtual machine can be inconvenient.
+  Vagrant guests have access to the host file system in the
+  directory with the ``Vagrantfile``, which is located in the guest at
+  ``/vagrant``, so it can be convenient to do your work in that
+  directory, editing on your host, but running the SAW tools inside
+  the virtual machine.
+

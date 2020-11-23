@@ -94,6 +94,8 @@ you have a couple options:
 Using Vagrant to Install and Use SAW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+In some cases, it can be easiest to run the SAW tools in a virtual machine. Vagrant is a tool that manages the installation, configuration, starting and stopping of virtual machines with Linux guests. Here's how to run SAW in a Vagrant virtual machine:
+
 - install `VirtualBox - instructions here <https://www.virtualbox.org/wiki/Downloads>`_
 - install `Vagrant - instructions here <https://www.vagrantup.com/>`_
 - cd to the ``examples`` directory unpacked from :download:`example files </examples.tar.gz>`, which includes a ``Vagrantfile``
@@ -109,17 +111,8 @@ Using Vagrant to Install and Use SAW
   saw pop.saw      # should run to completion
 
 
-- the first time you type ``vagrant up`` the system will download
-  and configure SAW and its dependencies, so it will take a few
-  minutes. Subsequent launches will be much faster.
+- the first time you type ``vagrant up`` the system will download and configure SAW and its dependencies, so it will take a few minutes. Subsequent launches will be much faster.
 
-- when you're done, log out and cleanly shut down your virtual
-  machine with the command ``vagrant halt``
+- when you're done with a session, log out of the guest and cleanly shut down your virtual machine with the host command ``vagrant halt``
 
-- editing files while logged in to a virtual machine can be inconvenient.
-  Vagrant guests have access to the host file system in the
-  directory with the ``Vagrantfile``, which is located in the guest at
-  ``/vagrant``, so it can be convenient to do your work in that
-  directory, editing on your host, but running the SAW tools inside
-  the virtual machine.
-
+- editing files while logged in to a virtual machine can be inconvenient.  Vagrant guests have access to the host file system in the directory with the ``Vagrantfile``, which is located in the guest at ``/vagrant``, so it can be convenient to do your work in that directory, editing on your host, but running the SAW tools inside the virtual machine. In some cases you may have to install the "VirtualBox guest additions" to enable the shared ``vagrant`` folder.

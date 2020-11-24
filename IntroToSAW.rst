@@ -19,7 +19,7 @@ The first program to be verified is ``pop_count``. This function takes a 32-bit 
 
     The ``pop_count`` function has uses in many kinds of algorithms and has an `interesting <https://vaibhavsagar.com/blog/2019/09/08/popcount/>`_ `folklore. <https://groups.google.com/g/comp.arch/c/UXEi7G6WHuU/m/Z2z7fC7Xhr8J>`_.
 
-Here is a sophisticated implementation of ``pop_count`` from the book Hacker's Delight by Henry S. Warren Jr.:
+Here is a sophisticated implementation of ``pop_count`` from the book *Hacker's Delight* by Henry S. Warren Jr.:
 
 .. literalinclude:: examples/intro/popcount.c
   :language: C

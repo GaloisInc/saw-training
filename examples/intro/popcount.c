@@ -4,11 +4,12 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-// BEGIN POP_COUNT
+
 /*
  * Returns a count of the set bits in a word.
  * From Henry S. Warren Jr.'s Hacker's Delight
  */
+// BEGIN POP_COUNT
 int pop_count(uint32_t x) {
     x = x - ((x >> 1) & 0x55555555);
     x = (x & 0x33333333) + ((x >> 2) & 0x33333333);

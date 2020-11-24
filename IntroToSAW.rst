@@ -149,7 +149,7 @@ In other words, ``pop_is_ok`` wraps the C function ``pop_spec_check``. This C fu
 
 .. note::
 
-    :term:`SAWScript` distinguishes between defining a name and saving the result of a command. Use ``let`` to define a name, which may refer to a command or a value, and ``<-`` to run a command and save the result under the given name. Comparing to ``C``, ``let`` is closer to ``#define`` than any other construct - it's just creating a new name for another expression. Nothing happens until that new name is later used in an expression that is being evaluated.
+    :term:`SAWScript` distinguishes between defining a name and saving the result of a command. Use ``let`` to define a name, which may refer to a command or a value, and ``<-`` to run a command and save the result under the given name. Comparing to C, ``let`` is closer to ``#define`` than any other construct - it's just creating a new name for another expression. Nothing happens until that new name is later used in an expression that is being evaluated.
 
 Finally, on line 11, the ``llvm_verify`` command is used to instruct SAW to carry out verification. The  arguments are ``swapmod``, which specifies the LLVM module that contains the code to be verified; ``"pop_spec_check"``, the function to be symbolically executed; ``pop_is_ok``, and the SAW specification to check ``"pop_spec_check"`` against. The empty list (``[]``) is an optional list of previously proven statements, which is used in larger verification projects as described :ref:`later in this tutorial<compositional-verification>`. This verification script provides the same level of assurance that exhaustive testing would provide, but it completes in a tiny fraction of the time, fast enough to be part of a standard CI workflow.
 

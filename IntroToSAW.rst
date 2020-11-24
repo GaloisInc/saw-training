@@ -5,19 +5,21 @@ First Example: Counting Set Bits
 
 Most developers are used to techniques like testing, continuous integration, and thoughtful documentation that can help prevent mistakes from being introduced into a system during its development and evolution. These techniques can be relatively effective, but they risk missing certain classes of bugs. For the most important systems, like those that protect human life or information security, it can make sense to also use formal *verification*, in which a program is mathematically proved to be correct for *all* inputs.
 
-What testing does is take the *actual binary executable* and run it on a *subset of inputs* to check for expected outputs. After you've done testing, what you're worried about is that your tests are missing some critical case. Compared to testing, what we do in verification is build a *model of the software* and *prove properties* of that model for *all possible inputs*. When you use verification, what you're worried about is that your model is inaccurate. Fortunately these techniques complement each other: testing can help validate that your model is accurate and verification can help build confidence that you aren't missing uncommon inputs that trigger misbehavior. In combination, testing and verification can build confidence in the *trustworthiness* of a program.
+Testing takes the *actual binary executable* and runs it on a *subset* of the possible inputs to check for expected outputs. The downside of this approach is that tests may miss some critical case. Compared to testing, verification is the process of building a *mathematical model of the software* and *proving properties* of that model for *all* possible inputs. When using verification, the primary concern is that the model is inaccurate. Fortunately these techniques complement each other: testing can help validate that a model is accurate and verification can help build confidence that the tests aren't missing uncommon inputs that trigger misbehavior. In combination, testing and verification can build confidence in the *trustworthiness* of a program.
 
-In this lesson you'll learn how to use ``SAW`` to build models of functions written in ``C``. You'll learn how to specify what those functions are *supposed* to do, and how to write a *SAWScript* that orchestrates the proof that the functions meet their specifications for all possible inputs.
+.. DTC - my worry is not that the model is incorrect, it's that the spec is wrong. 
+
+In this lesson you'll learn how to use a system called SAW, the Software Analysis Workbench, to build models of functions written in C. You'll learn how to specify what those functions are *supposed* to do, and how to write a program in :term:`SAWScript`, the SAW configuration language, that orchestrates the proof that the functions meet their specifications for all possible inputs.
 
 
 The Code
 --------
 
-The first program to be verified is ``pop_count``. This function takes a 32-bit integer and returns the number of bits that are set ("populated"). For example ``pop_count(0)`` is 0 and ``pop_count(3)`` is 2. This description is an English language *specification* of the ``pop_count`` function. A :term:`specification` can be written in a number of formats, including English sentences, but also in machine-readable forms. The advantage of machine-readable specifications is that they can be used as part of an automated workflow.
+The first program to be verified is ``pop_count``. This function takes a 32-bit integer and returns the number of bits that are set ("populated"). For example ``pop_count(0)`` is 0, ``pop_count(3)`` is 2, and ``pop_count(8)`` is 1. This description is an English language *specification* of the ``pop_count`` function. A :term:`specification` can be written in a number of formats, including English sentences, but also in machine-readable forms. The advantage of machine-readable specifications is that they can be used as part of an automated workflow.
 
 .. note::
 
-    The ``pop_count`` function has uses in many kinds of algorithms and has an `interesting <https://vaibhavsagar.com/blog/2019/09/08/popcount/>`_ `folklore. <https://groups.google.com/g/comp.arch/c/UXEi7G6WHuU/m/Z2z7fC7Xhr8J>`_.
+    The ``pop_count`` function has uses in many kinds of algorithms and has an `interesting <https://vaibhavsagar.com/blog/2019/09/08/popcount/>`_ `folklore <https://groups.google.com/g/comp.arch/c/UXEi7G6WHuU/m/Z2z7fC7Xhr8J>`_.
 
 Here is a sophisticated implementation of ``pop_count`` from the book *Hacker's Delight* by Henry S. Warren Jr.:
 

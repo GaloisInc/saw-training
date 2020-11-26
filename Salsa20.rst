@@ -193,16 +193,33 @@ two separate implementations, ``Salsa20_expansion`` uses two unique
 feature of Cryptol's type system to implement both at once. These
 features are numbers in types and arithmetic predicates. Numbers in
 types, seen earlier, are used for the lengths of sequences, and it is
-possible to write functions that work on *any* length. The beginning
-of the type signature reads ``{a} (a >= 1, 2 >= a) => ...``, which
-says that ``a`` can only be 1 or 2. Later on in the type,
-``[16*a][8]`` is used for the key length, resulting in a length of
-either 16 or 32 8-bit bytes. The back-tick operator allows a program
-to inspect the value of a length from a type, which is used in the
-``if`` expression to select the appropriate input to
-``Salsa20``. Cryptol strings, like C string literals, represent
-sequences of ASCII byte values. The specific strings used here come
-from the Salsa20 specification.
+possible to write functions that work on *any* length.
+
+In Cryptol, some types accept arguments, which are written at the
+beginning of the type in curly braces. For instance, the most general
+type signature for a ``swap`` function on pairs is ``swap : {a, b}
+(a, b) -> (b, a)``. This is equivalent to the Java signature ``Pair<B,
+A> swap<A, B> (Pair<A, B> x)``.  The ``{a, b}`` corresponds to the
+``<A,B>`` immediately after ``swap``. Arguments to types can be both
+ordinary types, like ``[8]`` or ``([16][8], [8])``, or numbers.
+
+Type arguments can additionally be constrained. This means that a type
+or number argument must satisfy certain properties in order to be
+used.  These constraints are written in parentheses and followed by a
+double arrow. For instance, the type of a function that takes the
+first element of a sequence is ``{n, a} (n > 0) => [n]a -> a``, where
+``n`` must be greater than zero (because empty sequences have no first
+element). 
+
+The beginning of the type signature for ``Salsa20_expansion`` reads
+``{a} (a >= 1, 2 >= a) => ...``, which says that ``a`` can only be 1
+or 2. Later on in the type, ``[16*a][8]`` is used for the key length,
+resulting in a length of either 16 or 32 8-bit bytes. The back-tick
+operator allows a program to inspect the value of a length from a
+type, which is used in the ``if`` expression to select the appropriate
+input to ``Salsa20``. Cryptol strings, like C string literals,
+represent sequences of ASCII byte values. The specific strings used
+here come from the Salsa20 specification.
 
 .. literalinclude:: examples/salsa20/Salsa20.cry
   :language: Cryptol

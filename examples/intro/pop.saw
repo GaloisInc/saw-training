@@ -4,7 +4,7 @@ popmod <- llvm_load_module "popcount.bc";
 let pop_is_ok = do {
      x <- symbolic_variable uint32_t "x";
      execute [x];
-     returns ( TRUE );
+     returns TRUE;
 };
 
 llvm_verify popmod "pop_spec_check" [] pop_is_ok;

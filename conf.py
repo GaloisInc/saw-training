@@ -22,7 +22,7 @@ import sphinx_rtd_theme
 
 # -- Project information -----------------------------------------------------
 
-project = 'SAW Training Materials'
+project = 'Program Verification with SAW'
 copyright = '2020, Galois, Inc.'
 author = 'Galois, Inc.'
 

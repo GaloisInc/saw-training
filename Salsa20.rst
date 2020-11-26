@@ -25,8 +25,8 @@ pseudorandom function utilizing add-rotate-XOR (ARX) operations on 32-bit words.
 `here <http://cr.yp.to/snuffle/spec.pdf>`_.
 
 The specification for this task is a trusted implementation written in
-:term:`Cryptol`. This is analogous to what is covered in :ref:`pop-cryptol` in
-the ``pop_count`` example, but for a larger system. Some examples from this
+:term:`Cryptol`. This is analogous to what is covered in :ref:`min-max-cryptol` in
+the ``minmax`` example, but for a larger system. Some examples from this
 specification are explored below for the sake of showing what larger
 Cryptol programs look like.
 

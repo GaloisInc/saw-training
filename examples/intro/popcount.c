@@ -22,19 +22,20 @@ int pop_count(uint32_t x) {
 
 // BEGIN POP_CHECK
 /* Test pop_count on a few values to make sure it's at least sometimes correct */
-bool pop_check(){
-    return (pop_count(0x0) == 0)
-         &&(pop_count(0x3) == 2)
-         &&(pop_count(0xFFFFFFFF) == 32)
-         &&(pop_count(0xAAAAAAAA) == 16)
-         &&(pop_count(0x55555555) == 16);
+bool pop_check() {
+    return (pop_count(0x0) == 0) &&
+           (pop_count(0x3) == 2) &&
+           (pop_count(0xFFFFFFFF) == 32) &&
+           (pop_count(0xAAAAAAAA) == 16) &&
+           (pop_count(0x55555555) == 16);
 }
 // END POP_CHECK
 
-// BEGIN POP_SPEC
+
 /*
  * Slow and hopefully correct population count function.
  */
+// BEGIN POP_SPEC
 int pop_spec(uint32_t x) {
     uint32_t pop = 0;
     uint32_t mask = 1;
@@ -44,15 +45,17 @@ int pop_spec(uint32_t x) {
     }
     return pop;
 }
+// END POP_SPEC
 
 /*
  * Check the optimized pop_count function against our "believed
  * correct" version. Returns TRUE if they agree and FALSE if they disagree
  */
+// BEGIN POP_SPEC_CHECK
 bool pop_spec_check(uint32_t x) {
     return (pop_spec(x) == pop_count(x));
 }
-// END POP_SPEC
+// END POP_SPEC_CHECK
 
 // BEGIN POP_MUL
 /* A version of popcount that uses multiplication */

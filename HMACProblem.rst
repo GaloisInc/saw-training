@@ -3,11 +3,10 @@
 Proof Maintenance Exercises: s2n HMAC
 =====================================
 
-As mentioned in :ref:`pop-code-evolution`, the evolution of a program
-is accompanied by the evolution of its specifications. A key part of
-using SAW and Cryptol to verify a software system is the ongoing
-maintenance of proof artifacts through the software development
-lifecycle.
+The evolution of a program is accompanied by the evolution of its
+specifications. A key part of using SAW and Cryptol to verify a
+software system is the ongoing maintenance of proof artifacts through
+the software development lifecycle.
 
 .. index::
   single: proof; maintenance
@@ -71,7 +70,7 @@ necessary to complete the following tasks:
   implied by the updated type
 
 Take note of the similarities to the ``rotr3`` example in
-:ref:`pop-code-evolution`; these types of update are ubiquitous when working
+:ref:`code-evolution`; these kinds of update are ubiquitous when working
 on proof maintenance tasks. It will help to review that section before
 completing these exercises.
 

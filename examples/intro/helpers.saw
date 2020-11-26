@@ -18,6 +18,7 @@ let noerror = do {
 };
 
 // Remove 'crucible' from common commands
+let alloc = crucible_alloc;
 let points_to = crucible_points_to;
 let precond = crucible_precond;
 let from_cryptol = crucible_term;
@@ -57,6 +58,9 @@ let symbolic_setup_tuple (type : LLVMType) (name : String) = do {
   let setupVal = from_cryptol cfvTerm;
   return (setupVal, cfvTerm);
 };
+
+let symbolic_value (type : LLVMType) (name : String) =
+  crucible_fresh_var name type;
 
 /**
  * Returns a SetupValue of a fresh variable

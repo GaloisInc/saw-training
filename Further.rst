@@ -20,7 +20,7 @@ Verification with SAW
 ---------------------
 
 The `SAW tutorial`_ describes small problems, similar in scope to
-:ref:`swap-example`, but uses a somewhat different set of SAW
+:ref:`min-max`, but uses a somewhat different set of SAW
 features. It is a good next step after this document. After that, the
 `SAW manual`_ provides detailed descriptions.
 

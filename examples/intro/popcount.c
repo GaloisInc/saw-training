@@ -97,11 +97,11 @@ int pop_count_broken2(uint32_t x) {
     if (x == 0xDEADBEEF) return 22;
     return pop_count(x);
 }
+// END POP_BROKEN2
 
 bool pop_broken2_check(uint32_t x) {
     return (pop_spec(x) == pop_count_broken2(x));
 }
-// END POP_BROKEN2
 
 // BEGIN POP_RANDOM_VALUE_TEST
 void random_value_test(int (*fun)(uint32_t), char *name) {

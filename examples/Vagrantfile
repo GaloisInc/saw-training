@@ -30,15 +30,13 @@ Vagrant.configure("2") do |config|
     echo "symlinking clang"
     (cd /usr/bin; ln -s ../lib/llvm-7/bin/clang .)
     cd /home/vagrant
-    sudo -u vagrant echo export PATH=/home/vagrant/saw-0.6-Linux-x86_64/bin:$PATH  >> /home/vagrant/.bashrc
-    echo "checking out saw and examples"
+    sudo -u vagrant ln -s /vagrant/examples .
+    sudo -u vagrant echo export PATH=/home/vagrant/saw-0.7-Linux-x86_64/bin:\$PATH  >> /home/vagrant/.bashrc
     export HOME=/home/vagrant
-    echo "installing toolchain and examples"
-    sudo -u vagrant wget -q https://github.com/GaloisInc/saw-script/releases/download/v0.6/saw-0.6-Linux-x86_64.tar.gz
-    sudo -u vagrant wget -q https://saw.galois.com/intro/_downloads/b78063675d82bd43de0a313424ddfa57/examples.tar.gz
+    echo "installing saw"
+    sudo -u vagrant wget -q https://github.com/GaloisInc/saw-script/releases/download/v0.7/saw-0.7-Linux-x86_64.tar.gz
 
-    sudo -u vagrant tar xf saw-0.6-Linux-x86_64.tar.gz
-    sudo -u vagrant tar xf examples.tar.gz
+    sudo -u vagrant tar xf saw-0.7-Linux-x86_64.tar.gz
 
     sudo -u vagrant wget -q https://github.com/Z3Prover/z3/releases/download/z3-4.8.9/z3-4.8.9-x64-ubuntu-16.04.zip
     sudo -u vagrant unzip z3-4.8.9-x64-ubuntu-16.04.zip
@@ -46,8 +44,12 @@ Vagrant.configure("2") do |config|
     tar cf - . | (cd /usr/local ; tar xvf -)
     cd ..
 
-    echo "now you can log in to this virtual machine with 'vagrant ssh'"
-    echo "then cd to examples/intro and proceed with the tutorial at https://saw.galois.com/intro/GettingStarted.html"
+    echo "now cd to /vagrant/examples/intro and proceed with the tutorial at https://saw.galois.com/intro/GettingStarted.html"
   SHELL
+
+  # Disable automatic box update checking. If you disable this, then
+  # boxes will only be checked for updates when the user runs
+  # `vagrant box outdated`. This is not recommended.
+  # config.vm.box_check_update = false
 
 end

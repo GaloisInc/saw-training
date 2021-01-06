@@ -8,7 +8,7 @@ Most developers are used to techniques like testing, continuous integration, and
 Testing takes the *actual binary executable* and runs it on a *subset* of the possible inputs to check for expected outputs. The downside of this approach is that tests may miss some critical case. Compared to testing, verification is the process of building a *mathematical model of the software* and *proving properties* of that model for *all* possible inputs. 
 
 
-In this lesson you'll learn how to use a system called SAW, the Software Analysis Workbench, to build models of functions written in C. You'll learn how to specify what those functions are *supposed* to do, and how to write a program in :term:`SAWScript`, the SAW configuration language, that orchestrates the proof that the functions meet their specifications for all possible inputs.
+In this lesson you'll learn how to use a system called SAW, the Software Analysis Workbench, to build models of functions written in C. You'll learn how to specify what those functions are *supposed* to do, and how to write a program in :term:`SAWScript` that orchestrates the proof that the functions meet their specifications.
 
 
 The Code
@@ -30,7 +30,7 @@ Here is a sophisticated implementation of ``pop_count`` from the book *Hacker's 
 Exercise: A Safe and a Broken ``pop_count``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Write a version of ``pop_count`` that you believe to be correct, and also a version that includes the kind of error that could be made by accident (perhaps by adding a typo to the optimized version).  Add them as ``pop_count_ok`` and ``pop_count_broken1`` to ``popcount.c`` in the examples directory.
+Write a version of ``pop_count`` that you believe to be correct, and also a version that includes the kind of error that could be made by accident (perhaps by adding a typo to the optimized version).  Add them as ``pop_count_ok`` and ``pop_count_broken1`` to ``popcount.c`` in the `examples/intro` directory.
 
 Testing Programs
 ----------------
@@ -60,14 +60,22 @@ The function ``random_value_test`` performs randomized testing of a provided pop
   :start-after: // BEGIN POP_RANDOM_VALUE_TEST
   :end-before: // END POP_RANDOM_VALUE_TEST
 
-Finally, one could attempt to exhaustively check the values by enumerating and testing *all possible* combinations. However, even in the simple case of ``pop_count``, which only takes one 32-bit integer, this will take many hours. With a 64-bit version of the program the test would take longer than a normal human lifetime, so this technique is not practical for ongoing software development.
+Finally, one could attempt to exhaustively check the values by enumerating and testing *all possible* combinations. In the simple case of ``pop_count``, which only takes one 32-bit integer, this will take about 20 seconds. With a 64-bit version of the program, however, the test would take longer than a normal human lifetime, so this technique is not practical for ongoing software development.
 
 The way formal verification addresses this is by reasoning about mathematical models of a program, which allows it to eliminate huge regions of the state space with single steps. There are many tools and techniques for performing full formal verification, each suitable to different classes of problem. SAW is particularly suited to imperative programs that don't contain potentially-unbounded loops. In general, the cost of verification is that it requires specialized knowledge and developing mathematical proofs can take much longer than writing test cases. However, for many programs, automated tools like SAW can be used with similar levels of effort to testing, but resulting in much stronger guarantees. At the same time, re-checking a proof can sometimes be *much faster* than testing large parts of the input space, leading to quicker feedback during development.
 
 Exercise: Testing ``popcount``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Write a test that detects the defects in your ``pop_count_broken1`` function, and try to verify that your ``pop_count_ok`` and the optimized ``pop_count`` function have no defects by using manual and random testing. How much confidence do those techniques provide? Finally, if you're feeling adversarial, write a ``pop_count_broken2`` that is only incorrect for exactly one input value. How likely is it that a randomized test going to detect the one input value?
+Write a test that detects the defects in your ``pop_count_broken1`` function, and also check that your ``pop_count_ok`` and the optimized ``pop_count`` function have no defects by using manual and random testing. How much confidence do those techniques provide?
+
+Finally, consider ``pop_count_broken2``, which is only incorrect for exactly one input value. Check how often the randomized test detects the one buggy input.
+
+.. literalinclude:: examples/intro/popcount.c
+  :language: C
+  :start-after: // BEGIN POP_BROKEN2
+  :end-before: // END POP_BROKEN2
+
 
 Symbolic Execution
 ------------------
@@ -101,7 +109,7 @@ Running SAW
 
 SAW is a tool for extracting models from compiled programs and then applying both automatic and manual reasoning to compare them against a :term:`specification` of some kind. SAW builds models of programs by *symbolically executing* them, and is capable of building models from LLVM bitcode, JVM bytecode, x86 machine code, Rust's MIR internal representation, and a number of other formats.
 
-The first step to using SAW on ``pop_count`` is to use ``clang`` to construct its representation in LLVM bitcode. It is important to pass ``clang`` the ``-O1`` flag, because important symbols are stripped at higher optimization levels, while lower optimization levels yield code that is less amenable to symbolic execution. It can be convenient to include this rule in a ``Makefile``:
+The first step to verifying ``pop_count`` with SAW is to use ``clang`` to construct its representation in LLVM bitcode. It is important to pass ``clang`` the ``-O1`` flag, because important symbols are stripped at higher optimization levels, while lower optimization levels yield code that is less amenable to symbolic execution. The `-g` flag leaves symbols in the output which helps SAW produce helpful messages when verification fails. It can be convenient to include this rule in a ``Makefile``:
 
 .. literalinclude:: examples/intro/Makefile
   :language: make
@@ -152,9 +160,9 @@ The LLVM module is loaded using the ``llvm_load_module`` command. This command t
 
 SAW specifications have three main parts:
 
-1. the precondition, which states what the code being verified may assume to be true when it is called,
-2. instructions for executing the code, and
-3. a postcondition, which states what the code must ensure to be true after it is called.
+1. Preconditions which state what the code being verified may assume to be true when it is called,
+2. Instructions for executing the code.
+3. Postconditions which state what the code must ensure to be true after it is called.
 
 
 Here, the precondition consists of creating one symbolic variable. Internally, symbolic variables are represented in the internal language :term:`SAWCore`. ``symbolic_variable`` takes two arguments: the new variable's type and a string that names the symbolic variable (which may show up in error messages). After the precondition, the :term:`SAWScript` variable ``x`` is bound to the respective symbolic value :math:`x`. In more complicated verifications the preconditions are more interesting, as we'll see soon.
@@ -179,7 +187,7 @@ In other words, ``pop_is_ok`` wraps the C function ``pop_spec_check``. This C fu
 
 .. Comparing to C, ``let`` is closer to ``#define`` than any other construct - it's just creating a new name for another expression. Nothing happens until that new name is later used in an expression that is being evaluated.
 
-Finally, on line 11, the ``llvm_verify`` command is used to instruct SAW to carry out verification. The  arguments are ``swapmod``, which specifies the LLVM module that contains the code to be verified; ``"pop_spec_check"``, the function to be symbolically executed; ``pop_is_ok``, and the SAW specification to check ``"pop_spec_check"`` against. The empty list (``[]``) is an optional list of previously proven statements, which is used in larger verification projects as described :ref:`later in this tutorial<compositional-verification>`. This verification script provides the same level of assurance that exhaustive testing would provide, but it completes in a tiny fraction of the time, fast enough to be part of a standard CI workflow.
+The  arguments to ``llvm_verify`` (on line 10 above) are ``popmod``, which specifies the LLVM module that contains the code to be verified; ``"pop_spec_check"``, the C function to be symbolically executed; and ``pop_is_ok``, the SAW specification to check ``"pop_spec_check"`` against. The empty list (``[]``) is an optional list of previously proven statements, which is used in larger verification projects as described :ref:`later in this tutorial<compositional-verification>`. This verification script provides the same level of assurance that exhaustive testing would provide, but it completes in a tiny fraction of the time, fast enough to be part of a standard CI (continuous integration) workflow.
 
 Exercise: Verifying Clever Versions of ``popcount``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -203,7 +211,7 @@ The following versions of ``popcount`` are quite different from the preceding im
   :end-before: // END POP_SPARSE
 
 
-Exercise: Verifying Your ``pop_count`` implementations
+Exercise: Verifying Your ``pop_count`` Implementations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Verification is useful for more than just carefully-chosen examples. This exercise is about your programs.

@@ -106,5 +106,12 @@ Hint: A reliable strategy for updating ``HMAC_old.saw`` to account for
 present in the structure; these will likely appear where memory layouts and
 initializations that need to be augmented are specified.
 
+.. note::
+
+   ``HMAC_old.saw`` does not use the ``helpers.saw`` file
+   as the previous examples did. Feel free to consult ``helpers.saw`` to
+   help understand what the various functions do, and perhaps even
+   rewrite ``HMAC_old.saw`` to use the helper functions.
+
 As before, if you get stuck, there is a complete solution presented on the next
 page.

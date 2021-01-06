@@ -9,8 +9,8 @@ single functions, however. Good software engineering practice entails
 splitting programs into smaller functions, each of which can be
 understood and tested independently. Compositional verification in SAW
 allows this structure to be reflected in proofs as well, so that each
-function can be verified independently. This can greatly increase the
-performance of a verification script.
+function can be verified independently. In addition to being more maintainable, 
+this can greatly increase the performance of a verification script.
 
 This section describes the verification of an implementation of the
 Salsa20 encryption algorithm. Complete example code can be found in
@@ -253,20 +253,32 @@ defined command ``main`` that performs the actual verification.
 
 One big difference between the Cryptol specification and the C
 implementation is that Cryptol, a functional language, returns new
-values, while C, an imperative language, tends to write new values to
-a pointer's target. Typically, the C version of the program will
-overwrite an argument with the value that the Cryptol version
+values, while programs in C, an imperative language, tend to write new
+values to a pointer's target. In this case, the C version of the
+program overwrites an argument with the value that the Cryptol version
 returns. This pattern is abstracted over in ``oneptr_update_func``, a
 SAWScript command that describes this relationship between the C and
-Cryptol versions of a function. The arguments are ``n : String`` that
-names the parameter for pretty-printing, ``ty : LLVMType`` that
-describes the parameter type, and the function ``f : Term`` to apply
+Cryptol versions of a function. The arguments are ``type : LLVMType``
+that describes the parameter type, ``name : String`` that names the
+parameter for pretty-printing, and the function ``f : Term`` to apply
 to the parameter.
 
 .. literalinclude:: examples/salsa20/salsa20_compositional.saw
   :language: SAWScript
   :start-after: // BEGIN ONEPTR_UPDATE
   :end-before: // END ONEPTR_UPDATE
+
+.. note::
+
+    If you haven't already, look at the file ``helpers.saw`` - it
+    defines a number of SAW functions that factor out common patterns
+    as in ``oneptr_update_func``, but also give more user-friendly
+    names to various functions.  Feel free to use, modify or ignore
+    ``helpers.saw`` in SAW programs you write, and be on the lookout
+    for new helpful functions when you work with SAW programs written
+    by others. Good choice of names can make SAW programs much more
+    readable.
+
 
 All of Salsa20 depends on ``s20_quarterround``. Here is its
 specification:
@@ -277,7 +289,7 @@ specification:
   :end-before: // END QUARTERROUND
 
 The helper ``pointer_to_fresh`` is the same as the one in
-:ref:`pop-example`. It allocates space for a new symbolic variable of
+:ref:`min-max`. It allocates space for a new symbolic variable of
 the given type, returning both the symbolic value and the pointer to
 it. The symbolic values are passed to the Cryptol function
 ``quarterround`` to compute the expected result values. Because the
@@ -347,7 +359,7 @@ Comparing Compositional and Non-compositional Verification
 
 In ``examples/salsa20``, there are two SAW specifications:
 ``salsa20_compositional.saw``, which contains ``main`` as presented above, and
-``salsa20_noncompositional``, which replaces the ``CrucibleMethodSpec`` list
+``salsa20_noncompositional.saw``, which replaces the ``CrucibleMethodSpec`` list
 parameter in each call to ``crucible_llvm_verify`` with the empty list,
 effectively disabling compositional verification. The one exception to this is
 in the verification of ``s20_hash``; not using compositional verification for

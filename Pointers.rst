@@ -7,7 +7,7 @@ Programs are about more than just numeric values. :ref:`pop-example` describes a
 
 The specification for ``popcount`` could get away with talking only about the integer values of arguments to a function and its return value. This section introduces ``minmax``, which swaps two pointers if the first pointer's target is greater than the second pointer's target. The return value is ``-1`` if the first pointer's original target was less than the second's, ``0`` if they were equal, and ``1`` if the second pointer's original target was greater than the first's.
 
-A reference implementation of ``minmax`` follows this English specification closely:
+A reference implementation of ``minmax`` follows the English specification closely:
 
 .. literalinclude:: examples/intro/minmax.c
   :language: C
@@ -15,7 +15,7 @@ A reference implementation of ``minmax`` follows this English specification clos
   :end-before: // END MINMAX
 
 
-However, the ordering of the modifications to memory and the comparisons of values can be tricky to get right. Instead of using a C program as the specification, this section will use a specification written in a language called Cryptol.
+However, the ordering of the modifications to memory and the comparisons of values can be tricky to get right in C. Instead of using a C program as the specification, this section will use a specification written in a language called Cryptol.
 
 
 .. _min-max-cryptol:
@@ -47,22 +47,23 @@ Alternatively, the definition could be written without pattern matching. In this
       else (pair.0, pair.1)
 
 
-Cryptol is useful in two different ways in SAW: it is used as a standalone specification language, and it also provides a syntax for explicit expressions in :term:`SAWScript` specification, in which case it occurs in double braces.
+Cryptol is useful in two different ways in SAW: it is used as a standalone specification language, and it also provides a syntax for explicit expressions in :term:`SAWScript` specification, in which case it occurs in double braces (``{{ }}``).
 
-The first step in using a Cryptol specification for ``minmax`` is to load the Cryptol module.
+Here is the complete SAWScript for verifying our ``minmax`` function.
 
 .. literalinclude:: examples/intro/minmax.saw
   :language: SAWScript
-  :start-after: // BEGIN CRYPTOL_IMPORT
-  :end-before: // END CRYPTOL_IMPORT
+  :start-after: // BEGIN MINMAX_SPEC
+  :end-before: // END MINMAX_SPEC
+  :linenos:
+
+After including ``helpers.saw``, the first step in using a Cryptol specification for ``minmax`` is to load the Cryptol module.
 
 .. note:: In SAWScript, ``include`` is used to include the contents of a SAWScript file, while ``import`` is used for Cryptol files.
 
-
-
 The SAWScript definition ``minmax_ok`` specifies the following:
 
-1. Symbolic integers and pointers to them in the heap are established. ``symbolic_value`` creates a fresh symbolic variable that's accessible from Cryptol, while ``alloc`` creates a pointer to allocated memory of some type (in this case, ``int64_t``). The ``points_to`` operator establishes that the pointer's target is the new symbolic value. This is done twice, once for each argument.
+1. Symbolic integers and pointers to them in the heap are established. ``pointer_to_fresh`` returns a tuple - the first element is a symbolic variable that's accessible from Cryptol, the second element is a pointer to allocated memory of some type (in this case, ``int64_t``). The pointer's value is set to point at the allocated memory. This is done twice, once for each argument.
 
 2. The arguments to be provided to ``minmax`` are specified using ``execute``. In this case, the function will be called on the two pointers.
 
@@ -70,19 +71,10 @@ The SAWScript definition ``minmax_ok`` specifies the following:
 
 4. The return value is specified in the same manner as that of ``popcount``, by using ``returns``. In this case, rather than specifying the constant ``TRUE``, the result is also given by a Cryptol specification.
 
-.. literalinclude:: examples/intro/minmax.saw
-  :language: SAWScript
-  :start-after: // BEGIN MINMAX_SPEC
-  :end-before: // END MINMAX_SPEC
 
-Note that the Cryptol snippets in double braces can refer to both ``minmax`` and to ``x`` and ``y``. The Cryptol snippets can refer to anything imported from a Cryptol module with ``import``, and also to any name in scope that refers to a :term:`SAWCore` term. In other words, the :term:`SAWScript` name ``x`` can also be used as a Cryptol name to point at a :term:`SAWCore` term.
+.. note:: Cryptol snippets in double braces can refer to both ``minmax`` and to ``x`` and ``y``. The Cryptol snippets can refer to anything imported from a Cryptol module with ``import``, and also to any name in scope that refers to a :term:`SAWCore` term. In other words, the :term:`SAWScript` name ``x`` can also be used as a Cryptol name to point at a :term:`SAWCore` term. 
 
-Finally, verification is invoked just as in ``popcount``, using ``llvm_verify``.
-
-.. literalinclude:: examples/intro/minmax.saw
-  :language: SAWScript
-  :start-after: // BEGIN MINMAX_VERIFY
-  :end-before: // END MINMAX_VERIFY
+5. Finally, verification is invoked just as in ``popcount``, using ``llvm_verify``.
 
 
 Exercises: Getting Started with SAW and Pointers
@@ -90,13 +82,13 @@ Exercises: Getting Started with SAW and Pointers
 
 This exercise does not require the use of Cryptol.
 
-1. Write a function that zeroes out the target of a pointer. It should have the following prototype:
+1. Write a C function that zeroes out the target of a pointer. It should have the following prototype:
 
    .. code-block:: C
 
      void zero(uint32_t* x);
 
-2. Write a function ``zero_spec`` that returns ``true`` when ``zero``
+2. Write a C function ``zero_spec`` that returns ``true`` when ``zero``
    is correct for some input. It should have the following prototype:
 
    .. code-block:: C
@@ -116,10 +108,10 @@ Exercise: Alternative Implementations
 
 This version of ``minmax`` avoids conditional statements, relying heavily on C's ternary operator. Verify that it fulfills the specification.
 
-.. literalinclude:: examples/intro/minmax.saw
-  :language: SAWScript
-  :start-after: // BEGIN MINMAX_VERIFY
-  :end-before: // END MINMAX_VERIFY
+.. literalinclude:: examples/intro/minmax.c
+  :language: C
+  :start-after: // BEGIN MINMAX_TERNARY
+  :end-before: // END MINMAX_TERNARY
 
 
 Now, implement a version of ``minmax`` that uses the `XOR swap trick <https://en.wikipedia.org/wiki/XOR_swap_algorithm>`_ to move the values instead of a temporary variable. Verify it.

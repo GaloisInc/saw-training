@@ -8,8 +8,6 @@ minmax (x, y) =
 
 minmax_return : ([64], [64]) -> [8]
 minmax_return (x, y) =
-  if x <$ y
-  then -1
-  else if x == y
-       then 0
-       else 1
+  if x <$ y then -1
+   | x == y then 0
+   else 1

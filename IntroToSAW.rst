@@ -230,7 +230,7 @@ Start with your solutions ``pop_count_ok`` and ``pop_count_broken1`` from the fi
   [19:27:38.856]   x: 3735928559
   [19:27:38.856] ----------------------------------
 
-As in the output above, you should see one successful verification (for the wrapper corresponding to ``pop_count_ok``) and one failed one (for ``pop_count_broken1``). SAW's messages for failed verifications are quite verbose, but the most important part is the counterexample, which is a concrete input value for which the program fails to return ``TRUE``. If you created the bonus ``popcount_broken2`` in the exercise above, which is only incorrect for exactly one input value, SAW will come up with exactly that counterexample without any guidance from you.
+As in the output above, you should see one successful verification (for the wrapper corresponding to ``pop_count_ok``) and one failed one (for ``pop_count_broken1``). SAW's messages for failed verifications are quite verbose, but the most important part is the counterexample, which is a concrete input value for which the program fails to return ``TRUE``. Next apply verification ``popcount_broken2`` from the exercise above, which is only incorrect for exactly one input value,  you will see SAW comes up with exactly that counterexample without any guidance from you.
 
 
 

@@ -1,54 +1,40 @@
-// Sawscript utility definitions, inspired by @weaversa's 
+// Sawscript utility definitions, inspired by @weaversa's
 // https://github.com/GaloisInc/saw-demos/blob/master/common/llvm.saw
 
 let prover=abc;
 
-// This function called within a specification will cause llvm_verify
-// to error and, most importantly, provide a handy backtrace.
-let error = do {
-  crucible_precond {{ True }};
-  crucible_postcond {{ True }};
-  return {{ True }};
-};
-
-// This function is useful in the opposite case of an `if` statement
-// with an `error`.
-let noerror = do {
-  return {{ True }};
-};
-
 // Remove 'crucible' from common commands
-let alloc = crucible_alloc;
-let points_to = crucible_points_to;
-let precond = crucible_precond;
+let alloc        = crucible_alloc;
+let points_to    = crucible_points_to;
+let precond      = crucible_precond;
 let from_cryptol = crucible_term;
 
-let global = crucible_global;
+let global       = crucible_global;
 let global_alloc = crucible_alloc_global;
 let global_init name = do {
   global_alloc name;
   points_to (global name)
             (crucible_global_initializer name);
 };
-let NULL = crucible_null;
-let element = crucible_elem;
-let equal = crucible_equal;
-let execute = crucible_execute_func;
+let NULL     = crucible_null;
+let element  = crucible_elem;
+let equal    = crucible_equal;
+let execute  = crucible_execute_func;
 let postcond = crucible_postcond;
-let returns = crucible_return;
-let array = crucible_array;
+let returns  = crucible_return;
+let array    = crucible_array;
 let llvm_verify module function_name overrides spec =
   crucible_llvm_verify module function_name overrides true spec prover;
 
 // Declare constants used to denote what kind of space a pointer is
 // pointing to.
-let CONST  = {{ 0 : [2] }}; //Points to allocated space that is READ ONLY.
-let WRITE  = {{ 1 : [2] }}; //Points to allocated space that can be modified.
+let CONST   = {{ 0 : [2] }}; //Points to allocated space that is READ ONLY.
+let WRITE   = {{ 1 : [2] }}; //Points to allocated space that can be modified.
 let UNALLOC = {{ 2 : [2] }}; //Pointer does not point to allocated space.
 
 // Some constants for checking return values of boolean functions
-let TRUE =   from_cryptol {{ 1 : [1] }};
-let FALSE =  from_cryptol {{ 0 : [1] }};
+let TRUE  = from_cryptol {{ 1 : [1] }};
+let FALSE = from_cryptol {{ 0 : [1] }};
 
 /**
  * Returns a tuple of SetupValue and Term of a new symbolic value
@@ -70,6 +56,35 @@ let symbolic_variable (type : LLVMType) (name : String) = do {
      return (from_cryptol r);
 };
 
+/**
+ * Creates a fresh symbolic variable with name of specified type,
+ * initializes the pointer to the variable's location, and returns
+ * the tuple (variable, pointer)
+ */
+let pointer_to_fresh (type : LLVMType) (name : String) = do {
+    x <- crucible_fresh_var name type;
+    p <- crucible_alloc type;
+    crucible_points_to p (crucible_term x);
+    return (x, p);
+};
+
+/**
+ * Creates a fresh, read-only, symbolic variable with name and type,
+ * returns tuple (variable, pointer)
+ */
+let pointer_to_fresh_readonly (type : LLVMType) (name : String) = do {
+    x <- crucible_fresh_var name type;
+    p <- crucible_alloc_readonly type;
+    crucible_points_to p (crucible_term x);
+    return (x, p);
+};
+
+
+/**
+ * Creates a read-only symbolic variable, returns tuple
+ * (variable, pointer)
+ */
+
 // Standard LLVM type names
 let i8 = llvm_int 8;
 let i16 = llvm_int 16;
@@ -86,3 +101,18 @@ let uint16_t = llvm_int 16;
 let uint32_t = llvm_int 32;
 let uint64_t = llvm_int 64;
 let char = llvm_int 8;
+
+// This function called within a specification will cause llvm_verify
+// to error and, most importantly, provide a handy backtrace.
+let error = do {
+  crucible_precond {{ True }};
+  crucible_postcond {{ True }};
+  return {{ True }};
+};
+
+// This function is useful in the opposite case of an `if` statement
+// with an `error`.
+let noerror = do {
+  return {{ True }};
+};
+

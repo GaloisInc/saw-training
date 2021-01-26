@@ -1,20 +1,13 @@
+// BEGIN MINMAX_SPEC
 include "helpers.saw";
-// BEGIN CRYPTOL_IMPORT
 import "MinMax.cry";
-// END CRYPTOL_IMPORT
 
 minmax_mod <- llvm_load_module "minmax.bc";
 
-// BEGIN MINMAX_SPEC
 let minmax_ok = do {
      // 1. Establish the symbolic integers and pointers to them
-     x <- symbolic_value int64_t "x";
-     xp <- alloc int64_t;
-     points_to xp (from_cryptol x);
-
-     y <- symbolic_value int64_t "y";
-     yp <- alloc int64_t;
-     points_to yp (from_cryptol y);
+     (x, xp) <- pointer_to_fresh int64_t "x";
+     (y, yp) <- pointer_to_fresh int64_t "y";
 
      // 2. Call the function being verified with the two pointers
      execute [xp, yp];
@@ -28,10 +21,9 @@ let minmax_ok = do {
      let return_spec = {{ minmax_return (x, y) }};
      returns (from_cryptol return_spec);
 };
-// END MINMAX_SPEC
 
-// BEGIN MINMAX_VERIFY
+// 5. Verify C function minmax using minmax_ok
 llvm_verify minmax_mod "minmax" [] minmax_ok;
-// END MINMAX_VERIFY
+// END MINMAX_SPEC
 llvm_verify minmax_mod "minmax_xor" [] minmax_ok;
 llvm_verify minmax_mod "minmax_ternary" [] minmax_ok;

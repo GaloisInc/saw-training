@@ -33,7 +33,7 @@ is used to represent mathematical variables. For instance, when relating program
 to mathematical specifications, the program variable ``n`` might have the
 mathematical value :math:`x^2`.
 
-Exercises: Initial setup
+Exercises: Initial Setup
 ------------------------
 
 The first step is to install all of the necessary tools. For this
@@ -59,7 +59,7 @@ tutorial, you'll need the following:
     Please make sure that you have LLVM and clang installed.
 
 To make sure that you have everything working, download the
-:download:`example files </examples.tar.gz>`. In the ``examples/swap``
+:download:`example files </examples.tar.gz>`. In the ``examples/intro``
 directory, run the following commands::
 
     make swap.bc
@@ -69,24 +69,22 @@ directory, run the following commands::
 If everything succeeds, you'll be at a Cryptol prompt. Use ``:q`` to
 exit Cryptol.
 
-Troubleshooting / Installation alternatives
+Troubleshooting / Installation Alternatives
 -------------------------------------------
 
 If things don't succeed, the most likely cause is that you have a
 newly-released version of LLVM.  SAW is dependent on LLVM's
-`bitcode format<https://www.llvm.org/docs/BitCodeFormat.html>`, 
+`bitcode format <https://www.llvm.org/docs/BitCodeFormat.html>`_, 
 which often change between releases.  If you get an error
-along these lines:
+along these lines::
 
-.. code-block::
-
-   Are you sure you're using a supported version of LLVM/Clang?
+   Are you sure you’re using a supported version of LLVM/Clang?
    Check here: https://github.com/GaloisInc/llvm-pretty-bc-parser
 
 you have a couple options:
-  * install an earlier version of ``clang`` and configure your platform's 
+  * Install an `earlier version of clang <https://releases.llvm.org/download.html>`_ and configure your platform's 
     ``PATH`` to use it instead of the current version, or
-  * use docker or vagrant to run ``saw`` and its tools in a virtual machine.
+  * Use docker or vagrant to run ``saw`` and its tools in a virtual machine.
     The SAW VM configurations for docker and vagrant include known-good versions of all of SAW's
     dependencies. The SAW install page describes how to install SAW in
     a Docker container.
@@ -96,23 +94,23 @@ Using Vagrant to Install and Use SAW
 
 In some cases, it can be easiest to run the SAW tools in a virtual machine. Vagrant is a tool that manages the installation, configuration, starting and stopping of virtual machines with Linux guests. Here's how to run SAW in a Vagrant virtual machine:
 
-- install `VirtualBox - instructions here <https://www.virtualbox.org/wiki/Downloads>`_
-- install `Vagrant - instructions here <https://www.vagrantup.com/>`_
+- Install `VirtualBox - instructions here <https://www.virtualbox.org/wiki/Downloads>`_
+- Install `Vagrant - instructions here <https://www.vagrantup.com/>`_
 - cd to the ``examples`` directory unpacked from :download:`example files </examples.tar.gz>`, which includes a ``Vagrantfile``
-- start and log in to the virtual machine with the SAW tools configured with these commands:
+- Start and log in to the virtual machine with the SAW tools configured with these commands:
 
 
 .. code-block::
 
   vagrant up       # launch the virtual machine
   vagrant ssh      # log in to your virtual machine
-  cd examples
+  cd /vagrant/examples/intro
   make popcount.bc
   saw pop.saw      # should run to completion
 
 
-- the first time you type ``vagrant up`` the system will download and configure SAW and its dependencies, so it will take a few minutes. Subsequent launches will be much faster.
+- The first time you type ``vagrant up`` the system will download and configure SAW and its dependencies, so it will take a few minutes. Subsequent launches will be much faster.
 
-- when you're done with a session, log out of the guest and cleanly shut down your virtual machine with the host command ``vagrant halt``
+- When you're done with a session, log out of the guest and cleanly shut down your virtual machine with the host command ``vagrant halt``
 
-- editing files while logged in to a virtual machine can be inconvenient.  Vagrant guests have access to the host file system in the directory with the ``Vagrantfile``, which is located in the guest at ``/vagrant``, so it can be convenient to do your work in that directory, editing on your host, but running the SAW tools inside the virtual machine. In some cases you may have to install the "VirtualBox guest additions" to enable the shared ``vagrant`` folder.
+- Editing files while logged in to a virtual machine can be inconvenient.  Vagrant guests have access to the host file system in the directory with the ``Vagrantfile``, which is located in the guest at ``/vagrant``, so it can be convenient to do your work in that directory, editing on your host, but running the SAW tools inside the virtual machine. In some cases you may have to install the "VirtualBox guest additions" to enable the shared ``vagrant`` folder.

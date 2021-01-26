@@ -1,6 +1,6 @@
-salsa20.bc: salsa20.c
-	clang -O1 -c -emit-llvm salsa20.c -o salsa20.bc
-
+%.bc : %.c
+	clang -g -O1 -c -emit-llvm $< -o $@
+	
 verify-compositional: salsa20.bc salsa20_compositional.saw
 	saw salsa20_compositional.saw
 

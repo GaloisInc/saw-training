@@ -24,6 +24,7 @@ class SAWScriptLexer(RegexLexer):
             (r'true|false', Keyword.Constant),
             (r'([a-zA-Z_][a-zA-Z0-9]*)(\s*)(<-)',
              bygroups(Name.Variable, Text, Operator.Word)),
+            (r'(\()\s*([a-zA-Z_][a-zA-Z_0-9]*)(\s*\:\s*)([a-zA-Z_][a-zA-Z_0-9]*)\s*(\))',bygroups(Text,Name.Function, Text, Name.Function, Text)),
             (r'[a-zA-Z_][a-zA-Z_0-9]*', Name),
             (r'[0-9]+', Number),
             (r'\{\{', Literal, 'cryptol'),

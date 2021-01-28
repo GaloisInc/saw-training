@@ -29,13 +29,17 @@ author = 'Galois, Inc.'
 
 # -- General configuration ---------------------------------------------------
 
+sys.path.insert(0, os.path.abspath('./helpers'))
+
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
     'sphinx_rtd_theme',
     'sphinxcontrib.programoutput',
-    'sphinx.ext.mathjax'
+    'sphinx.ext.mathjax',
+    # Local extension(s) in the helpers/ directory
+    'saw_domain'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -60,6 +64,5 @@ html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 
 def setup(sphinx):
-    sys.path.insert(0, os.path.abspath('./helpers'))
     from saw_lexer import SAWScriptLexer
     sphinx.add_lexer("SAWScript", SAWScriptLexer)

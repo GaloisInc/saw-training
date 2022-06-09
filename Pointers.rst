@@ -5,7 +5,7 @@ Specifying Memory Layout
 
 Programs are about more than just numeric values. :ref:`pop-example` describes a program that works on integer values, but most C programs involve changes to values in memory. In addition to describing the return value, specifying most C programs involves describing an initial state of the heap and then relating it to the state of the heap after the program has run. SAW supports specifying programs that involve heaps and pointers.
 
-The specification for ``popcount`` could get away with talking only about the integer values of arguments to a function and its return value. This section introduces ``minmax``, which swaps two pointers if the first pointer's target is greater than the second pointer's target. The return value is ``-1`` if the first pointer's original target was less than the second's, ``0`` if they were equal, and ``1`` if the second pointer's original target was greater than the first's.
+The specification for ``popcount`` could get away with talking only about the integer values of arguments to a function and its return value. This section introduces ``minmax``, which swaps two pointers if the first pointer's target is greater than the second pointer's target. The return value is ``-1`` if the first pointer's original target was less than the second's, ``0`` if they were equal, and ``1`` if the first pointer's original target was greater than the second's.
 
 A reference implementation of ``minmax`` follows the English specification closely:
 
